@@ -1,0 +1,38 @@
+.root {
+  -fx-font: 11px "JetBrains Mono", "Droid Sans Mono", "DejaVu Sans Mono", monospace;
+}
+
+.mnemonic-underline {
+  -fx-stroke: -fx-text-base-color;
+}
+
+.eliminated-allocation .text {
+  -fx-strikethrough: true;
+}
+
+.tooltip .text {
+  -fx-strikethrough: false;
+  -fx-font-family: "JetBrains Mono", monospace;
+  -fx-font-size: 11px;
+}
+
+Button {
+  -fx-font: 11px "JetBrains Mono", "Droid Sans Mono", "DejaVu Sans Mono", monospace;
+  -fx-base: #eeeeff;
+  -fx-padding: 3 4 4 3;
+}
+
+.chart-title {
+  -fx-text-fill: blue;
+  -fx-font-size: 16px;
+  -fx-font-family: "JetBrains Mono", sans-serif;
+}
+
+.readonly-label {
+  -fx-border-color: black;
+  -fx-border-width: 1px;
+  -fx-alignment: LEFT;
+  -fx-background-color: white;
+  -fx-padding: 4px;
+  -fx-font-family: "JetBrains Mono", "Droid Sans Mono", "DejaVu Sans Mono", monospace;
+}

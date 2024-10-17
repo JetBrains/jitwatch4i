@@ -1,0 +1,248 @@
+/* Root Layout */
+.root {
+    -fx-background-color: #2B2B2B;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    -fx-font-size: 11px;
+}
+
+/* Labels */
+.label {
+    -fx-text-fill: #A9B7C6;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: #313335;
+    -fx-text-fill: #A9B7C6;
+    -fx-border-color: #444;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.button:hover {
+    -fx-background-color: #444;
+}
+
+/* Text Fields */
+.text-field, .password-field {
+    -fx-background-color: #313335;
+    -fx-text-fill: #A9B7C6;
+    -fx-prompt-text-fill: #80868B;
+    -fx-border-color: #444;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #6897BB;
+}
+
+/* TextArea */
+.text-area {
+    -fx-control-inner-background: #313335;
+    -fx-background-color: #313335;
+    -fx-text-fill: #A9B7C6;
+    -fx-prompt-text-fill: #80868B;
+    -fx-highlight-fill: #6897BB;
+    -fx-highlight-text-fill: #FFFFFF;
+    -fx-caret-color: #6897BB;
+    -fx-border-color: #444;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.text-area:focused {
+    -fx-border-color: #6897BB;
+}
+
+/* Table Views */
+.table-view {
+    -fx-background-color: #2B2B2B;
+    -fx-border-color: #313335;
+}
+
+.table-view .column-header {
+    -fx-background-color: #313335;
+    -fx-text-fill: #A9B7C6;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: #313335;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #6897BB;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* TreeView */
+.tree-view {
+    -fx-background-color: #2B2B2B;
+    -fx-border-color: #313335;
+    -fx-cell-hover-color: #444;
+}
+
+.tree-view .tree-cell {
+    -fx-text-fill: #A9B7C6;
+    -fx-background-color: transparent;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.tree-view .tree-cell:filled:selected,
+.tree-view .tree-cell:filled:selected:hover {
+    -fx-background-color: #6897BB;
+    -fx-text-fill: #FFFFFF;
+}
+
+.tree-view .tree-cell:filled:hover {
+    -fx-background-color: #444;
+}
+
+.tree-view .indent {
+    -fx-background-color: transparent;
+}
+
+.tree-view .arrow {
+    -fx-background-color: transparent;
+}
+
+.tree-view .arrow:hover {
+    -fx-background-color: #555;
+}
+
+/* Menus */
+.menu-bar {
+    -fx-background-color: #2B2B2B;
+}
+
+.menu {
+    -fx-text-fill: #A9B7C6;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.menu:hover {
+    -fx-background-color: #313335;
+}
+
+/* Scroll Bars */
+.scroll-bar {
+    -fx-background-color: #2B2B2B;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #444;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #555;
+}
+
+/* Tooltips */
+.tooltip {
+    -fx-background-color: #313335;
+    -fx-text-fill: #A9B7C6;
+    -fx-border-color: #444;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ListView */
+.list-view {
+    -fx-background-color: #2B2B2B;
+    -fx-border-color: #313335;
+}
+
+.list-view .list-cell {
+    -fx-text-fill: #A9B7C6;
+    -fx-background-color: transparent;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.list-view .list-cell:selected {
+    -fx-background-color: #6897BB;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* ComboBox */
+.combo-box {
+    -fx-background-color: #313335;
+    -fx-text-fill: #A9B7C6;
+    -fx-border-color: #444;
+    -fx-font-family: "JetBrains Mono", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.combo-box:focused {
+    -fx-border-color: #6897BB;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: #2B2B2B;
+    -fx-text-fill: #A9B7C6;
+}
+
+.combo-box .list-cell:selected {
+    -fx-background-color: #6897BB;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* VBox */
+.vbox {
+    -fx-background-color: #2B2B2B !important;
+    -fx-spacing: 10; /* Adjust spacing as needed */
+    -fx-padding: 10; /* Adjust padding as needed */
+}
+
+/* HBox */
+.hbox {
+    -fx-background-color: #2B2B2B !important;
+    -fx-spacing: 10;
+    -fx-padding: 10;
+}
+
+/* BorderPane */
+.border-pane {
+    -fx-background-color: #2B2B2B;
+}
+
+/* StackPane */
+.stack-pane {
+    -fx-background-color: #2B2B2B;
+}
+
+/* GridPane */
+.grid-pane {
+    -fx-background-color: #2B2B2B;
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+    -fx-padding: 10;
+}
+
+/* FlowPane */
+.flow-pane {
+    -fx-background-color: #2B2B2B;
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+    -fx-padding: 10;
+}
+
+/* TilePane */
+.tile-pane {
+    -fx-background-color: #2B2B2B;
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+    -fx-padding: 10;
+}
+
+/* AnchorPane */
+.anchor-pane {
+    -fx-background-color: #2B2B2B;
+}
