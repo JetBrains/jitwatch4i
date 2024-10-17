@@ -116,6 +116,11 @@ public final class HotThrowFinder extends AbstractCompilationVisitable
 
 		Tag methodTag = parseDictionary.getMethod(methodID);
 
+		if (methodTag == null)
+		{
+			return;
+		}
+
 		Map<String, String> methodTagAttributes = methodTag.getAttributes();
 
 		currentMethod = methodTagAttributes.get(ATTR_NAME);

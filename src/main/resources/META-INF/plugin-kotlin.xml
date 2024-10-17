@@ -1,0 +1,12 @@
+<idea-plugin>
+    <!--
+    <extensions defaultExtensionNs="ru.yole.jitwatch">
+        <languageSupport language="kotlin" implementationClass="ru.yole.jitwatch.languages.JitWatchKotlinSupport"/>
+    </extensions>
+    -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.lineMarkerProvider language="kotlin" implementationClass="org.adoptopenjdk.jitwatch.ui.code.JitLineMarkerProvider"/>
+        <externalAnnotator language="kotlin" implementationClass="org.adoptopenjdk.jitwatch.ui.code.JitSourceAnnotator"/>
+    </extensions>
+</idea-plugin>

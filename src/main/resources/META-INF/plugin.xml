@@ -21,9 +21,35 @@
 
   <vendor url="https://jetbrains.com"></vendor>
 
+  <depends optional="true" config-file="plugin-kotlin.xml">org.jetbrains.kotlin</depends>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="org.adoptopenjdk.jitwatch.ui.code.languageSupport" beanClass="com.intellij.lang.LanguageExtensionPoint">
+      <with attribute="implementationClass" implements="org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupport"/>
+    </extensionPoint>
+  </extensionPoints>
+
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow id="JitWatch4i" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="bottom"
-                factoryClass="org.intellij.sdk.toolWindow.JitWatch4iToolWindowFactory"/>
+                factoryClass="org.adoptopenjdk.jitwatch.ui.JitWatch4iToolWindowFactory"/>
+    <projectService serviceInterface="org.adoptopenjdk.jitwatch.ui.code.JitWatchModelService"
+                    serviceImplementation="org.adoptopenjdk.jitwatch.ui.code.JitWatchModelService"/>
+
+    <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.adoptopenjdk.jitwatch.ui.code.JitLineMarkerProvider"/>
+    <externalAnnotator language="JAVA" implementationClass="org.adoptopenjdk.jitwatch.ui.code.JitSourceAnnotator"/>
+
+    <runConfigurationExtension implementation="org.adoptopenjdk.jitwatch.ui.code.JitRunConfigurationExtension"/>
   </extensions>
 
+  <extensions defaultExtensionNs="org.adoptopenjdk.jitwatch.ui.code">
+    <languageSupport language="JAVA" implementationClass="org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchJavaSupport"/>
+  </extensions>
+
+
+  <actions>
+    <action class="org.adoptopenjdk.jitwatch.ui.code.ShowInlineStructureAction" id="JitWatch.InlineStructure"
+            text="Show Inlining Structure">
+      <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+    </action>
+  </actions>
 </idea-plugin>

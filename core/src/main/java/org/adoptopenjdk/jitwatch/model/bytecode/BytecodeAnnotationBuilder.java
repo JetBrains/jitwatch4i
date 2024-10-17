@@ -747,7 +747,7 @@ public class BytecodeAnnotationBuilder extends AbstractCompilationVisitable
 		}
 	}
 
-	private String buildInlineAnnotation(IParseDictionary parseDictionary, Map<String, String> methodAttrs,
+	protected String buildInlineAnnotation(IParseDictionary parseDictionary, Map<String, String> methodAttrs,
 			Map<String, String> callAttrs, String reason, boolean inlined)
 	{
 		return TooltipUtil.buildInlineAnnotationText(inlined, reason, callAttrs, methodAttrs, parseDictionary);

@@ -154,6 +154,10 @@ public class LineTable
 				result = entry;
 				break;
 			}
+			if (result == null || entry.getSourceOffset() > sourceLine && entry.getSourceOffset() < result.getSourceOffset())
+			{
+				result = entry;
+			}
 		}
 
 		return result;
