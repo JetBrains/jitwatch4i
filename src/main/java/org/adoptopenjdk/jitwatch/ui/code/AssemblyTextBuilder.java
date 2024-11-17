@@ -170,9 +170,9 @@ public class AssemblyTextBuilder
         return result;
     }
 
-    public int getIndexForSourceLine(IMetaMember member, int sourceIndex)
+    public Integer getIndexForSourceLine(IMetaMember member, int sourceIndex)
     {
-        int result = -1;
+        Integer result = null;
 
         if (member == currentMember)
         {
