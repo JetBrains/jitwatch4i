@@ -3,35 +3,19 @@ package org.adoptopenjdk.jitwatch.ui.code;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.LogicalPosition;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
+import com.intellij.openapi.project.Project;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupport;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOLLAR;
-import static org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupportUtil.LanguageSupport;
-
-public class AssemblyViewer implements IViewer
+public class ViewerAssembly extends CodePanelBase
 {
-    private static final Logger logger = Logger.getInstance(AssemblyViewer.class);
+    private static final Logger logger = Logger.getInstance(ViewerAssembly.class);
 
-    private final AssemblyPanel assemblyPanel;
     private final AssemblyTextBuilder assemblyTextBuilder;
 
-    public AssemblyViewer(AssemblyPanel assemblyPanel)
+    public ViewerAssembly(Project project)
     {
-        this.assemblyPanel = assemblyPanel;
+        super(project);
         this.assemblyTextBuilder = new AssemblyTextBuilder();
-    }
-
-    @Override
-    public void setContentFromPsiFile(PsiFile sourceFile)
-    {
-        setContentFromMember(null);
     }
 
     @Override
@@ -39,16 +23,16 @@ public class AssemblyViewer implements IViewer
     {
         assemblyTextBuilder.setCurrentMember(member);
 
-        WriteCommandAction.runWriteCommandAction(assemblyPanel.getProject(), () ->
+        WriteCommandAction.runWriteCommandAction(getProject(), () ->
         {
-            assemblyPanel.setMovingCaretInViewer(true);
+            setMovingCaretInViewer(true);
             try
             {
-                assemblyPanel.getViewerDocument().setText(assemblyTextBuilder.getText());
+                getViewerDocument().setText(assemblyTextBuilder.getText());
             }
             finally
             {
-                assemblyPanel.setMovingCaretInViewer(false);
+                setMovingCaretInViewer(false);
             }
         });
     }
@@ -56,10 +40,10 @@ public class AssemblyViewer implements IViewer
     @Override
     public void syncEditorToViewer(LogicalPosition caretPosition)
     {
-		AssemblyTextBuilder.AssemblyLine assemblyLine = assemblyTextBuilder.getLine(caretPosition.line);
+        AssemblyTextBuilder.AssemblyLine assemblyLine = assemblyTextBuilder.getLine(caretPosition.line);
 
-		if (assemblyLine != null)
-		{
+        if (assemblyLine != null)
+        {
             String strSourceLine = assemblyTextBuilder.getSourceLineFromLine(assemblyLine);
 
             if (strSourceLine != null)
@@ -68,14 +52,14 @@ public class AssemblyViewer implements IViewer
                 {
                     int sourceLine = Integer.parseInt(strSourceLine) - 1;
 
-                    assemblyPanel.setMovingCaretInViewer(true);
+                    setMovingCaretInViewer(true);
                     try
                     {
-                        assemblyPanel.moveSourceEditorCaretToLine(sourceLine - 1);
+                        moveSourceEditorCaretToLine(sourceLine - 1);
                     }
                     finally
                     {
-                        assemblyPanel.setMovingCaretInViewer(false);
+                        setMovingCaretInViewer(false);
                     }
                 }
                 catch (NumberFormatException nfe)
@@ -83,7 +67,7 @@ public class AssemblyViewer implements IViewer
                     logger.error("Could not parse source line number: " + strSourceLine, nfe);
                 }
             }
-		}
+        }
     }
 
     @Override

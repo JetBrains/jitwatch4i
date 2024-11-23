@@ -34,10 +34,6 @@
                 factoryClass="org.adoptopenjdk.jitwatch.ui.JitWatch4iToolWindowFactory"/>
     <projectService serviceInterface="org.adoptopenjdk.jitwatch.ui.code.JitWatchModelService"
                     serviceImplementation="org.adoptopenjdk.jitwatch.ui.code.JitWatchModelService"/>
-
-    <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.adoptopenjdk.jitwatch.ui.code.JitLineMarkerProvider"/>
-    <externalAnnotator language="JAVA" implementationClass="org.adoptopenjdk.jitwatch.ui.code.JitSourceAnnotator"/>
-
     <runConfigurationExtension implementation="org.adoptopenjdk.jitwatch.ui.code.JitRunConfigurationExtension"/>
   </extensions>
 
@@ -47,9 +43,5 @@
 
 
   <actions>
-    <action class="org.adoptopenjdk.jitwatch.ui.code.ShowInlineStructureAction" id="JitWatch.InlineStructure"
-            text="Show Inlining Structure">
-      <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-    </action>
   </actions>
 </idea-plugin>

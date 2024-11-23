@@ -10,94 +10,64 @@ import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.ex.RangeHighlighterEx;
 import com.intellij.openapi.editor.impl.DocumentMarkupModel;
 import com.intellij.openapi.editor.markup.*;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.ui.JBColor;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.bytecode.BCAnnotationType;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineAnnotation;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
-import org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupport;
 
 import java.awt.*;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupportUtil.LanguageSupport;
-
-public class BytecodeViewer implements IViewer
+public class ViewerByteCode extends CodePanelBase
 {
-    private final ByteCodePanel byteCodePanel;
     private final BytecodeTextBuilder bytecodeTextBuilder;
     private RangeHighlighter lineRangeHighlighter;
 
-    public BytecodeViewer(ByteCodePanel byteCodePanel)
+    public ViewerByteCode(Project project)
     {
-        this.byteCodePanel = byteCodePanel;
+        super(project);
         this.bytecodeTextBuilder = new BytecodeTextBuilder();
-    }
-
-    @Override
-    public void setContentFromPsiFile(PsiFile sourceFile)
-    {
-        bytecodeTextBuilder.clear();
-
-        PsiFile psiFile = sourceFile;
-
-        JitWatchLanguageSupport<PsiElement, PsiElement> languageSupport = LanguageSupport.forLanguage(psiFile.getLanguage());
-
-        if (languageSupport == null)
-        {
-            return;
-        }
-
-        List<PsiElement> classes = languageSupport.getAllClasses(psiFile);
-
-        List<MetaClass> metaClasses = new ArrayList<>();
-
-        for (PsiElement cls : classes)
-        {
-            MetaClass metaClass = byteCodePanel.getModelService().getMetaClass(cls);
-            if (metaClass != null)
-            {
-                metaClasses.add(metaClass);
-                bytecodeTextBuilder.appendClass(metaClass);
-            }
-        }
-
-        WriteCommandAction.runWriteCommandAction(byteCodePanel.getProject(), () ->
-        {
-            byteCodePanel.setMovingCaretInViewer(true);
-            try
-            {
-                byteCodePanel.getViewerDocument().setText(bytecodeTextBuilder.getText());
-            }
-            finally
-            {
-                byteCodePanel.setMovingCaretInViewer(false);
-            }
-        });
-
-        renderBytecodeAnnotations(psiFile);
     }
 
     @Override
     public void setContentFromMember(IMetaMember member)
     {
+        bytecodeTextBuilder.setCurrentMember(member);
+
+        WriteCommandAction.runWriteCommandAction(getProject(), () ->
+        {
+            setMovingCaretInViewer(true);
+            try
+            {
+                getViewerDocument().setText(bytecodeTextBuilder.getText());
+            }
+            finally
+            {
+                setMovingCaretInViewer(false);
+            }
+        });
+
+        renderBytecodeAnnotations(member);
     }
 
-    private void renderBytecodeAnnotations(PsiFile psiFile)
+    private void renderBytecodeAnnotations(IMetaMember member)
     {
-        MarkupModel markupModel = DocumentMarkupModel.forDocument(byteCodePanel.getViewerDocument(), byteCodePanel.getProject(), true);
+        if (member == null)
+        {
+            return;
+        }
+
+        MarkupModel markupModel = DocumentMarkupModel.forDocument(getViewerDocument(), getProject(), true);
         markupModel.removeAllHighlighters();
 
-        byteCodePanel.getModelService().processBytecodeAnnotations(psiFile, (method, member, memberBytecode, instruction, annotationsForBCI) ->
+        getModelService().processMemberBytecodeAnnotations(member, (method, member1, memberBytecode, instruction, annotationsForBCI) ->
         {
-            Integer line = bytecodeTextBuilder.findLine(member, instruction.getOffset());
+            Integer line = bytecodeTextBuilder.findLine(member1, instruction.getOffset());
             if (line == null)
             {
                 return;
@@ -139,7 +109,7 @@ public class BytecodeViewer implements IViewer
 
     private void highlightBytecodeLine(int line, Color color, String tooltip, MarkupModel markupModel)
     {
-        Document document = byteCodePanel.getViewerEditor().getDocument();
+        Document document = getViewerEditor().getDocument();
         int lineStartOffset = document.getLineStartOffset(line);
         int lineEndOffset = document.getLineEndOffset(line);
 
@@ -196,19 +166,19 @@ public class BytecodeViewer implements IViewer
             return;
         }
 
-        byteCodePanel.setMovingCaretInViewer(true);
+        setMovingCaretInViewer(true);
         try
         {
-            byteCodePanel.moveSourceEditorCaretToLine(sourceLine - 1);
+            moveSourceEditorCaretToLine(sourceLine - 1);
         }
         finally
         {
-            byteCodePanel.setMovingCaretInViewer(false);
+            setMovingCaretInViewer(false);
         }
 
         if (lineRangeHighlighter != null)
         {
-            byteCodePanel.getViewerEditor().getMarkupModel().removeHighlighter(lineRangeHighlighter);
+            getViewerEditor().getMarkupModel().removeHighlighter(lineRangeHighlighter);
             lineRangeHighlighter = null;
         }
 
@@ -219,14 +189,14 @@ public class BytecodeViewer implements IViewer
             Integer endLine = bytecodeTextBuilder.findLine(member, instructionsForLine.get(instructionsForLine.size() - 1).getOffset());
             if (startLine != null && endLine != null)
             {
-                int startOffset = byteCodePanel.getViewerDocument().getLineStartOffset(startLine);
-                int endOffset = byteCodePanel.getViewerDocument().getLineStartOffset(endLine);
+                int startOffset = getViewerDocument().getLineStartOffset(startLine);
+                int endOffset = getViewerDocument().getLineStartOffset(endLine);
 
                 Color caretRowColor = EditorColorsManager.getInstance().getGlobalScheme().getColor(EditorColors.CARET_ROW_COLOR);
                 if (caretRowColor != null)
                 {
                     Color rangeColor = slightlyDarker(caretRowColor);
-                    lineRangeHighlighter = byteCodePanel.getViewerEditor().getMarkupModel().addRangeHighlighter(
+                    lineRangeHighlighter = getViewerEditor().getMarkupModel().addRangeHighlighter(
                             startOffset,
                             endOffset,
                             HighlighterLayer.CARET_ROW - 1,
@@ -257,5 +227,5 @@ public class BytecodeViewer implements IViewer
         int blue = Math.max((int) (color.getBlue() * 0.9), 0);
         return new Color(red, green, blue, color.getAlpha());
     }
-
 }
+

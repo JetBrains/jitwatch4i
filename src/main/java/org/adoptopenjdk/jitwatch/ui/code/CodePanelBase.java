@@ -12,7 +12,7 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import javax.swing.*;
 import java.awt.*;
 
-public abstract class CodePanelBase extends JPanel implements Disposable
+public abstract class CodePanelBase extends JPanel implements IViewer, Disposable
 {
     private static final String MESSAGE_CARD = "Message";
     private static final String EDITOR_CARD = "Editor";
@@ -61,13 +61,11 @@ public abstract class CodePanelBase extends JPanel implements Disposable
             {
                 if (!movingCaretInViewer)
                 {
-                    getViewer().syncEditorToViewer(e.getNewPosition());
+                    syncEditorToViewer(e.getNewPosition());
                 }
             }
         });
     }
-
-    protected abstract IViewer getViewer();
 
     public CodeToolWindowManager getCodeToolWindowManager()
     {
@@ -81,13 +79,13 @@ public abstract class CodePanelBase extends JPanel implements Disposable
 
     public void setCurrentMember(IMetaMember member)
     {
-        getViewer().setContentFromMember(member);
+        setContentFromMember(member);
     }
 
     public void showSourceFile(PsiFile sourceFile)
     {
         cardLayout.show(contentPanel, EDITOR_CARD);
-        getViewer().setContentFromPsiFile(sourceFile);
+        setContentFromMember(null);
     }
 
     public JitWatchModelService getModelService()
@@ -134,7 +132,7 @@ public abstract class CodePanelBase extends JPanel implements Disposable
 
     public void navigateToMemberBcOffsetOrLine(IMetaMember member, int bytecodeOffset, int lineNumber)
     {
-        Integer viewerLine = getViewer().findLine(member, bytecodeOffset, lineNumber);
+        Integer viewerLine = findLine(member, bytecodeOffset, lineNumber);
         if (viewerLine == null)
         {
             return;
@@ -153,7 +151,7 @@ public abstract class CodePanelBase extends JPanel implements Disposable
 
     public void navigateToMemberLine(IMetaMember member, int lineNumber)
     {
-        Integer viewerLine = getViewer().findLine(member, lineNumber);
+        Integer viewerLine = findLine(member, lineNumber);
         if (viewerLine == null)
         {
             return;

@@ -10,55 +10,48 @@ import java.util.*;
 
 public class BytecodeTextBuilder
 {
-    private static class MemberBytecodeMap
-    {
-        public final int startLine;
-        public final Map<BytecodeInstruction, Integer> instructionToLineMap;
-
-        public MemberBytecodeMap(int startLine)
-        {
-            this.startLine = startLine;
-            this.instructionToLineMap = new HashMap<>();
-        }
-    }
-
     private final StringBuilder builder;
     private int currentLine;
-    private final Map<IMetaMember, MemberBytecodeMap> memberIndex;
+    public Map<BytecodeInstruction, Integer> instructionToLineMap;
     private final List<Object> lineIndex;
+    private IMetaMember currentMember;
 
     public BytecodeTextBuilder()
     {
         this.builder = new StringBuilder();
         this.currentLine = 0;
-        this.memberIndex = new HashMap<>();
         this.lineIndex = new ArrayList<>();
+        this.instructionToLineMap = new HashMap<>();
     }
 
-    public void clear()
+    public void setCurrentMember(IMetaMember member)
     {
-        builder.setLength(0);
-        currentLine = 0;
-        memberIndex.clear();
-        lineIndex.clear();
-    }
-
-    public void appendClass(MetaClass metaClass)
-    {
-        for (IMetaMember member : metaClass.getMetaMembers())
+        if (member == currentMember)
         {
-            MemberBytecodeMap bytecodeMap = new MemberBytecodeMap(currentLine);
-            memberIndex.put(member, bytecodeMap);
-
-            MemberBytecode memberBytecode = member.getMemberBytecode();
-            appendLine(member.toStringUnqualifiedMethodName(false, false), member);
-            if (memberBytecode != null)
-            {
-                appendBytecode(memberBytecode, bytecodeMap);
-            }
-            appendLine("", null);
+            return;
         }
+
+        currentMember = member;
+
+        currentLine = 0;
+        builder.setLength(0);
+        lineIndex.clear();
+        instructionToLineMap.clear();
+
+        if (currentMember == null)
+        {
+            return;
+        }
+
+        MemberBytecode memberBytecode = member.getMemberBytecode();
+        appendLine(member.toStringUnqualifiedMethodName(false, false), member);
+        if (memberBytecode != null)
+        {
+            appendBytecode(memberBytecode);
+        }
+        appendLine("", null);
     }
+
 
     public String getText()
     {
@@ -72,7 +65,7 @@ public class BytecodeTextBuilder
         currentLine++;
     }
 
-    private void appendBytecode(MemberBytecode memberBC, MemberBytecodeMap bytecodeMap)
+    private void appendBytecode(MemberBytecode memberBC)
     {
         OptionalInt maxOffsetOpt = memberBC.getInstructions().stream()
                 .mapToInt(BytecodeInstruction::getOffset)
@@ -81,7 +74,7 @@ public class BytecodeTextBuilder
 
         for (BytecodeInstruction instruction : memberBC.getInstructions())
         {
-            bytecodeMap.instructionToLineMap.put(instruction, currentLine);
+            instructionToLineMap.put(instruction, currentLine);
             int labelLines = Math.max(instruction.getLabelLines(), 1);
             for (int line = 0; line < labelLines; line++)
             {
@@ -93,8 +86,11 @@ public class BytecodeTextBuilder
 
     public Integer findLine(IMetaMember member)
     {
-        MemberBytecodeMap map = memberIndex.get(member);
-        return (map != null) ? map.startLine : null;
+        if (member != currentMember)
+        {
+            return null;
+        }
+        return 0;
     }
 
     public Integer findLine(IMetaMember member, int bytecodeOffset)
@@ -113,9 +109,7 @@ public class BytecodeTextBuilder
         }
         if (instruction == null) return null;
 
-        MemberBytecodeMap map = memberIndex.get(member);
-        if (map == null) return null;
-        return map.instructionToLineMap.get(instruction);
+        return instructionToLineMap.get(instruction);
     }
 
     public Pair<IMetaMember, BytecodeInstruction> findInstruction(int line)

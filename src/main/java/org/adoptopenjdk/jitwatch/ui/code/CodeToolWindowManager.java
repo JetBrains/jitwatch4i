@@ -26,8 +26,8 @@ public class CodeToolWindowManager
 {
     private final Project project;
     private final ToolWindow toolWindow;
-    private final ByteCodePanel byteCodePanel;
-    private final AssemblyPanel assemblyPanel;
+    private final ViewerByteCode byteCodePanel;
+    private final ViewerAssembly assemblyPanel;
 
     private final JitWatchModelService modelService;
 
@@ -35,7 +35,7 @@ public class CodeToolWindowManager
     private PsiFile activeSourceFile;
     private boolean movingCaretInSource = false;
 
-    public CodeToolWindowManager(Project project, ToolWindow toolWindow, ByteCodePanel byteCodePanel, AssemblyPanel assemblyPanel)
+    public CodeToolWindowManager(Project project, ToolWindow toolWindow, ViewerByteCode byteCodePanel, ViewerAssembly assemblyPanel)
     {
         this.project = project;
         this.toolWindow = toolWindow;

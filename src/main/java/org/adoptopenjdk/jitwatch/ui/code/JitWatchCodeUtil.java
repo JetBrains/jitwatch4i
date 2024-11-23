@@ -5,14 +5,12 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.ContentManager;
 import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.model.bytecode.MemberBytecode;
 import org.adoptopenjdk.jitwatch.ui.main.JITWatchUI;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class JitWatchCodeUtil
@@ -28,11 +26,11 @@ public class JitWatchCodeUtil
         {
             ToolWindow toolWindow = toolWindowManager.registerToolWindow(
                     TOOL_WINDOW_ID, false, ToolWindowAnchor.RIGHT, project, true);
-            ByteCodePanel byteCodePanel = new ByteCodePanel(project);
+            ViewerByteCode byteCodePanel = new ViewerByteCode(project);
             toolWindow.getContentManager().addContent(
                     ContentFactory.getInstance().createContent(byteCodePanel, "ByteCode", false)
             );
-            AssemblyPanel assemblyPanel = new AssemblyPanel(project);
+            ViewerAssembly assemblyPanel = new ViewerAssembly(project);
             toolWindow.getContentManager().addContent(
                     ContentFactory.getInstance().createContent(assemblyPanel, "Asm", false)
             );
@@ -44,18 +42,6 @@ public class JitWatchCodeUtil
     public static ToolWindow getToolWindow(Project project)
     {
         return ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID);
-    }
-
-    public static CodeToolWindowManager getCodeToolwindowManger(Project project)
-    {
-        ToolWindow toolWindow = getToolWindow(project);
-        if (toolWindow != null)
-        {
-            ContentManager contentManager = toolWindow.getContentManager();
-            CodePanelBase codePanelBase = (CodePanelBase) Arrays.stream(contentManager.getContents()).findFirst().orElse(null);
-            return codePanelBase.getCodeToolWindowManager();
-        }
-        return null;
     }
 
     public static List<BytecodeInstruction> findInstructionsForSourceLine(MemberBytecode memberBytecode, int sourceLine)

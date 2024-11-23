@@ -121,8 +121,7 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
     private Content suggestionReportContent;
     private ReportPanel optimisedLockPanel;
     private Content optimizedLockContent;
-    private JitReportToolWindow jitReportToolWindow;
-    private Content jitReportToolWindowContent;
+
     private LogPanel logPanel;
     private Content logContent;
 
@@ -1019,12 +1018,6 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
 
     private void openAllTabs()
     {
-        if (jitReportToolWindow == null)
-        {
-            jitReportToolWindow = new JitReportToolWindow(project);
-            jitReportToolWindowContent = contentManager.getFactory().createContent(jitReportToolWindow, "JW Report", false);
-            contentManager.addContent(jitReportToolWindowContent, 1);
-        }
         if (optimisedLockPanel == null)
         {
             optimisedLockPanel = new ReportPanel(ReportStageType.ELIDED_LOCK, reportListEliminatedAllocations);
@@ -1160,12 +1153,6 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
             contentManager.removeContent(optimizedLockContent, true);
             optimisedLockPanel = null;
             optimizedLockContent = null;
-        }
-        if (jitReportToolWindowContent != null)
-        {
-            contentManager.removeContent(jitReportToolWindowContent, true);
-            jitReportToolWindow = null;
-            jitReportToolWindowContent = null;
         }
 
         listenerCompilationChanged.clear();

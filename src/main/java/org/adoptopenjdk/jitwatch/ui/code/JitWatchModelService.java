@@ -5,55 +5,42 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
-import org.adoptopenjdk.jitwatch.core.IJITListener;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
 import org.adoptopenjdk.jitwatch.core.JITWatchConstants;
-import org.adoptopenjdk.jitwatch.model.*;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
+import org.adoptopenjdk.jitwatch.model.IParseDictionary;
+import org.adoptopenjdk.jitwatch.model.IReadOnlyJITDataModel;
+import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.bytecode.*;
-import org.adoptopenjdk.jitwatch.parser.ILogParseErrorListener;
 import org.adoptopenjdk.jitwatch.parser.ILogParser;
-import org.adoptopenjdk.jitwatch.parser.hotspot.HotSpotLogParser;
-import org.adoptopenjdk.jitwatch.treevisitor.TreeVisitor;
 import org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupport;
 import org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupportUtil;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.jetbrains.annotations.NotNull;
 
-import static org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupportUtil.LanguageSupport;
-
-import javax.swing.SwingUtilities;
-import java.io.File;
-import java.io.IOException;
+import javax.swing.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupportUtil.LanguageSupport;
 
 public class JitWatchModelService
 {
     private static final Logger LOG = Logger.getInstance(JitWatchModelService.class);
 
     private final Project project;
-    private final JITWatchConfig config = new JITWatchConfig();
     private IReadOnlyJITDataModel model = null;
-    private InlineAnalyzer inlineAnalyzer = null;
     private final Map<MetaClass, Map<IMetaMember, BytecodeAnnotations>> bytecodeAnnotations = new HashMap<>();
     private final List<JitWatchLanguageSupport<PsiElement, PsiElement>> allLanguages = JitWatchLanguageSupportUtil.getAllSupportedLanguages();
     private final List<Runnable> updateListeners = new ArrayList<>();
@@ -68,16 +55,6 @@ public class JitWatchModelService
         return model;
     }
 
-    public List<InlineFailureInfo> getInlineFailures()
-    {
-        return inlineAnalyzer != null ? inlineAnalyzer.getFailures() : Collections.emptyList();
-    }
-
-    public List<InlineFailureGroup> getInlineFailureGroups()
-    {
-        return inlineAnalyzer != null ? inlineAnalyzer.getFailureGroups() : Collections.emptyList();
-    }
-
     public void addUpdateListener(Runnable listener)
     {
         updateListeners.add(listener);
@@ -87,22 +64,9 @@ public class JitWatchModelService
     {
         model = parser.getModel();
 
-        inlineAnalyzer = new InlineAnalyzer(parser.getModel(), metaMember ->
-        {
-            PsiElement psiMember = getPsiMember(metaMember);
-            return psiMember != null && ModuleUtil.findModuleForPsiElement(psiMember) != null;
-        });
-
-        ApplicationManager.getApplication().runReadAction(() -> TreeVisitor.walkTree(model, inlineAnalyzer));
-
         SwingUtilities.invokeLater(() ->
         {
             modelUpdated();
-            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(JitReportToolWindow.ID);
-            if (toolWindow != null)
-            {
-                toolWindow.activate(null);
-            }
         });
     }
 
@@ -373,6 +337,51 @@ public class JitWatchModelService
                         callback.call(method, member, memberBytecode, instruction, annotationsForBCI);
                     }
                 }
+            }
+        }
+    }
+
+    public void processMemberBytecodeAnnotations(IMetaMember member,
+                                                 Callback5<PsiElement, IMetaMember, MemberBytecode, BytecodeInstruction, List<LineAnnotation>> callback)
+    {
+        ClassBC classBytecode = member.getMetaClass().getClassBytecode();
+        if (classBytecode == null)
+        {
+            return;
+        }
+
+        Map<IMetaMember, BytecodeAnnotations> classAnnotations = bytecodeAnnotations.get(member.getMetaClass());
+
+        if (classAnnotations == null)
+        {
+            return;
+        }
+
+        BytecodeAnnotations annotations = classAnnotations.get(member);
+        if (annotations == null)
+        {
+            return;
+        }
+
+        MemberBytecode memberBytecode =  classBytecode.getMemberBytecode(member);
+        if (memberBytecode == null)
+        {
+            return;
+        }
+
+        PsiElement psiMember = getPsiMember(member);
+        for (IMetaMember memberWithAnnot : annotations.getMembers())
+        {
+            BytecodeAnnotationList annotationList = annotations.getAnnotationList(memberWithAnnot);
+            for (BytecodeInstruction instruction : memberBytecode.getInstructions())
+            {
+                List<LineAnnotation> annotationsForBCI = annotationList.getAnnotationsForBCI(instruction.getOffset());
+                if (annotationsForBCI == null || annotationsForBCI.isEmpty())
+                {
+                    continue;
+                }
+
+                callback.call(psiMember, member, memberBytecode, instruction, annotationsForBCI);
             }
         }
     }

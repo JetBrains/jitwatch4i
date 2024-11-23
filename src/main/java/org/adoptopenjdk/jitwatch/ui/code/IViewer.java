@@ -6,7 +6,6 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public interface IViewer
 {
-    void setContentFromPsiFile(PsiFile sourceFile);
     void setContentFromMember(IMetaMember member);
     void syncEditorToViewer(LogicalPosition caretPosition);
     Integer findLine(IMetaMember metaMember, int sourceLine);
