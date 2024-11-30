@@ -18,10 +18,15 @@ public class ViewerAssembly extends CodePanelBase
         this.assemblyTextBuilder = new AssemblyTextBuilder();
     }
 
-    @Override
-    public void setContentFromMember(IMetaMember member)
+    public IMetaMember getCurrentMember()
     {
-        assemblyTextBuilder.setCurrentMember(member);
+        return assemblyTextBuilder.getCurrentMember();
+    }
+
+    @Override
+    public void setContentFromMember(IMetaMember member, boolean reload)
+    {
+        assemblyTextBuilder.setCurrentMember(member, reload);
 
         WriteCommandAction.runWriteCommandAction(getProject(), () ->
         {

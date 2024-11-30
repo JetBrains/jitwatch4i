@@ -35,7 +35,7 @@ public class ViewerByteCode extends CodePanelBase
     }
 
     @Override
-    public void setContentFromMember(IMetaMember member)
+    public void setContentFromMember(IMetaMember member, boolean reload)
     {
         bytecodeTextBuilder.setCurrentMember(member);
 

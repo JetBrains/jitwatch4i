@@ -170,6 +170,7 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
         if (codeToolWindowManager == null)
         {
             codeToolWindowManager = JitWatchCodeUtil.registerToolWindows(project, this);
+            listenerCompilationChanged.add(codeToolWindowManager);
         }
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading compilation log", false)
@@ -441,7 +442,8 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
             }
         });
 
-        AnAction showPopupAction = new AnAction(null, "Options", AllIcons.Actions.Show) {
+        AnAction showPopupAction = new AnAction(null, "Options", AllIcons.Actions.Show)
+        {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 Component component = e.getInputEvent().getComponent();
@@ -457,6 +459,7 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
 
         actionToolbar = ActionManager.getInstance().createActionToolbar("SideToolbar", actionGroup, false);
         actionToolbar.setOrientation(SwingConstants.VERTICAL);
+        actionToolbar.setTargetComponent(mainPanel);
         JComponent toolbarComponent = actionToolbar.getComponent();
 
         mainPanel.add(toolbarComponent, BorderLayout.WEST);

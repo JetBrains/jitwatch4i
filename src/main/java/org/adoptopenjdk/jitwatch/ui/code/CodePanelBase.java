@@ -77,15 +77,15 @@ public abstract class CodePanelBase extends JPanel implements IViewer, Disposabl
         this.codeToolWindowManager = codeToolWindowManager;
     }
 
-    public void setCurrentMember(IMetaMember member)
+    public void setCurrentMember(IMetaMember member, boolean reload)
     {
-        setContentFromMember(member);
+        setContentFromMember(member, reload);
     }
 
     public void showSourceFile(PsiFile sourceFile)
     {
         cardLayout.show(contentPanel, EDITOR_CARD);
-        setContentFromMember(null);
+        setContentFromMember(null, false);
     }
 
     public JitWatchModelService getModelService()

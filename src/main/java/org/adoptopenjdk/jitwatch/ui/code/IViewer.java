@@ -6,7 +6,7 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public interface IViewer
 {
-    void setContentFromMember(IMetaMember member);
+    void setContentFromMember(IMetaMember member, boolean reload);
     void syncEditorToViewer(LogicalPosition caretPosition);
     Integer findLine(IMetaMember metaMember, int sourceLine);
     Integer findLine(IMetaMember metaMember, int bytecodeOffset, int sourceLine);

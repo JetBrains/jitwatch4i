@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.TypeConversionUtil;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.adoptopenjdk.jitwatch.ui.code.JavaTypeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -136,13 +137,23 @@ public class JitWatchJavaSupport implements JitWatchLanguageSupport<PsiClass, Ps
 
         for (int i = 0; i < paramTypeNames.size(); i++)
         {
-            if (!paramTypeNames.get(i).equals(methodParamTypes.get(i)))
+            String methodParamType = methodParamTypes.get(i);
+            if (!paramTypeNames.get(i).equals(methodParamType))
             {
-                return false;
+                methodParamType = JavaTypeUtils.normalizeTypeName(methodParamType);
+                if (!paramTypeNames.get(i).equals(methodParamType))
+                {
+                    return false;
+                }
             }
         }
 
         String psiMethodReturnTypeName = method.isConstructor() ? "void" : jvmText(method.getReturnType());
+
+        if (!returnTypeName.equals(psiMethodReturnTypeName))
+        {
+            psiMethodReturnTypeName = JavaTypeUtils.normalizeTypeName(psiMethodReturnTypeName);
+        }
         return returnTypeName.equals(psiMethodReturnTypeName);
     }
 

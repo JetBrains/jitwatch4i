@@ -39,6 +39,11 @@ public class AssemblyTextBuilder
         lines = new ArrayList<>();
     }
 
+    public IMetaMember getCurrentMember()
+    {
+        return currentMember;
+    }
+
     public AssemblyLine getLine(int line)
     {
         if (line >= 0 && line < lines.size())
@@ -48,9 +53,9 @@ public class AssemblyTextBuilder
         return null;
     }
 
-    public void setCurrentMember(IMetaMember member)
+    public void setCurrentMember(IMetaMember member, boolean reload)
     {
-        if (member == currentMember)
+        if (!reload && member == currentMember)
         {
             return;
         }

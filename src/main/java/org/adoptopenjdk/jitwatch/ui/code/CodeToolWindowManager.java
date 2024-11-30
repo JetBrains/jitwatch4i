@@ -19,10 +19,11 @@ import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTable;
 import org.adoptopenjdk.jitwatch.model.bytecode.LineTableEntry;
 import org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupport;
+import org.adoptopenjdk.jitwatch.ui.main.ICompilationChangeListener;
 
 import static org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupportUtil.LanguageSupport;
 
-public class CodeToolWindowManager
+public class CodeToolWindowManager implements ICompilationChangeListener
 {
     private final Project project;
     private final ToolWindow toolWindow;
@@ -34,6 +35,8 @@ public class CodeToolWindowManager
     private Editor activeSourceEditor;
     private PsiFile activeSourceFile;
     private boolean movingCaretInSource = false;
+    private int lastEditorBytecodeOffset;
+    private int lastEditorCaretLinePosition;
 
     public CodeToolWindowManager(Project project, ToolWindow toolWindow, ViewerByteCode byteCodePanel, ViewerAssembly assemblyPanel)
     {
@@ -74,6 +77,17 @@ public class CodeToolWindowManager
         modelService.addUpdateListener(this::updateContentFromSelectedEditor);
     }
 
+    @Override
+    public void compilationChanged(IMetaMember member)
+    {
+        assemblyPanel.setCurrentMember(member, true);
+        IMetaMember currentMember = assemblyPanel.getCurrentMember();
+        if (currentMember != null)
+        {
+            assemblyPanel.navigateToMemberBcOffsetOrLine(currentMember, lastEditorBytecodeOffset, lastEditorCaretLinePosition + 1);
+        }
+    }
+
     public void moveSourceEditorCaretToLine(int line)
     {
         activeSourceEditor.getCaretModel().moveToLogicalPosition(new LogicalPosition(line, 0));
@@ -82,8 +96,8 @@ public class CodeToolWindowManager
 
     private void setCurrentMember(IMetaMember currentMember)
     {
-        byteCodePanel.setCurrentMember(currentMember);
-        assemblyPanel.setCurrentMember(currentMember);
+        byteCodePanel.setCurrentMember(currentMember, false);
+        assemblyPanel.setCurrentMember(currentMember, false);
     }
 
     private void updateContentFromSelectedEditor()
@@ -303,6 +317,10 @@ public class CodeToolWindowManager
         }
 
         setCurrentMember(currentMember);
+
+        lastEditorBytecodeOffset = lineTableEntry.getBytecodeOffset();
+        lastEditorCaretLinePosition = caretPosition.line;
+
         byteCodePanel.navigateToMemberBcOffsetOrLine(currentMember, lineTableEntry.getBytecodeOffset(), caretPosition.line + 1);
         assemblyPanel.navigateToMemberBcOffsetOrLine(currentMember, lineTableEntry.getBytecodeOffset(), caretPosition.line + 1);
     }
@@ -329,5 +347,4 @@ public class CodeToolWindowManager
             assemblyPanel.navigateToMemberLine(currentMember, lineNumber);
         }
     }
-
 }
