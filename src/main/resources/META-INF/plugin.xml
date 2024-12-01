@@ -10,14 +10,12 @@
         Viewing HotSpot compilation in IntelliJ IDEA. See <a href="https://github.com/skybber/jitwatch4i">GitHub</a> for documentation.
     ]]></description>
 
-  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.java</depends>
 
   <change-notes>
     <![CDATA[
     ]]>
   </change-notes>
-
-  <depends optional="true" config-file="plugin-kotlin.xml">org.jetbrains.kotlin</depends>
 
   <extensionPoints>
     <extensionPoint qualifiedName="org.adoptopenjdk.jitwatch.ui.code.languageSupport" beanClass="com.intellij.lang.LanguageExtensionPoint">
