@@ -2,24 +2,20 @@
 
   <id>JitWatch4i</id>
 
-  <name>SDK: Tool Window Sample</name>
+  <name>jitwatch4i</name>
+
+  <vendor url="https://github.com/skybber/jitwatch4i">Vladimir Dvorak</vendor>
+
+  <description><![CDATA[
+        Viewing HotSpot compilation in IntelliJ IDEA. See <a href="https://github.com/skybber/jitwatch4i">GitHub</a> for documentation.
+    ]]></description>
 
   <depends>com.intellij.modules.platform</depends>
 
-  <description>
-    <![CDATA[
-      This sample plugin illustrates how to create your custom tool window.<br>
-      See the
-      <a href="https://plugins.jetbrains.com/docs/intellij/tool-windows.html">Tool Windows</a>
-      for more information.
-    ]]>
-  </description>
   <change-notes>
     <![CDATA[
     ]]>
   </change-notes>
-
-  <vendor url="https://jetbrains.com"></vendor>
 
   <depends optional="true" config-file="plugin-kotlin.xml">org.jetbrains.kotlin</depends>
 

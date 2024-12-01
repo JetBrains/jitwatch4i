@@ -8,9 +8,11 @@ package org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation;
 import com.intellij.ui.table.JBTable;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.report.Report;
+import org.adoptopenjdk.jitwatch.ui.main.IMemberSelectedListener;
 import org.adoptopenjdk.jitwatch.ui.report.IReportRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.IReportTable;
-import org.adoptopenjdk.jitwatch.ui.report.cell.LinkedBCICellRenderer;
+import org.adoptopenjdk.jitwatch.ui.report.cell.ButtonCellEditor;
+import org.adoptopenjdk.jitwatch.ui.report.cell.ButtonCellRenderer;
 import org.adoptopenjdk.jitwatch.ui.report.cell.TextTableCellRenderer;
 
 import javax.swing.table.AbstractTableModel;
@@ -23,9 +25,9 @@ public class EliminatedAllocationTable extends JBTable implements IReportTable
 {
     private List<IReportRowBean> rows;
 
-    public EliminatedAllocationTable(List<IReportRowBean> rows)
+    public EliminatedAllocationTable(IMemberSelectedListener selectionListener, List<IReportRowBean> rows)
     {
-        super(new EliminatedAllocationTableModel(rows));
+        super(new EliminatedAllocationTableModel(rows, 3));
         this.rows = rows;
 
         TableColumnModel columnModel = getColumnModel();
@@ -33,7 +35,7 @@ public class EliminatedAllocationTable extends JBTable implements IReportTable
         columnModel.getColumn(0).setPreferredWidth((int) (totalWidth * 0.2));
         columnModel.getColumn(1).setPreferredWidth((int) (totalWidth * 0.2));
         columnModel.getColumn(2).setPreferredWidth((int) (totalWidth * 0.2));
-        columnModel.getColumn(3).setPreferredWidth((int) (totalWidth * 0.12));
+        columnModel.getColumn(3).setPreferredWidth((int) (totalWidth * 0.05));
         columnModel.getColumn(4).setPreferredWidth((int) (totalWidth * 0.1));
         columnModel.getColumn(5).setPreferredWidth((int) (totalWidth * 0.18));
 
@@ -41,7 +43,8 @@ public class EliminatedAllocationTable extends JBTable implements IReportTable
         getColumnModel().getColumn(0).setCellRenderer(new TextTableCellRenderer());
         getColumnModel().getColumn(1).setCellRenderer(new TextTableCellRenderer());
         getColumnModel().getColumn(2).setCellRenderer(new TextTableCellRenderer());
-        getColumnModel().getColumn(3).setCellRenderer(new LinkedBCICellRenderer());
+        getColumnModel().getColumn(3).setCellRenderer(new ButtonCellRenderer());
+        getColumnModel().getColumn(3).setCellEditor(new ButtonCellEditor(selectionListener));
         getColumnModel().getColumn(4).setCellRenderer(new TextTableCellRenderer());
         getColumnModel().getColumn(5).setCellRenderer(new TextTableCellRenderer());
 
@@ -82,13 +85,15 @@ public class EliminatedAllocationTable extends JBTable implements IReportTable
     public static class EliminatedAllocationTableModel extends AbstractTableModel
     {
         private List<IReportRowBean> rows;
+        private final int editableColumn;
         private final String[] columnNames = {
                 "Class", "Member", "Compilation", "BCI", "How", "Eliminated Type"
         };
 
-        public EliminatedAllocationTableModel(List<IReportRowBean> rows)
+        public EliminatedAllocationTableModel(List<IReportRowBean> rows, int editableColumn)
         {
             this.rows = rows;
+            this.editableColumn = editableColumn;
         }
 
         public void setRows(List<IReportRowBean> rows)
@@ -153,7 +158,7 @@ public class EliminatedAllocationTable extends JBTable implements IReportTable
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex)
         {
-            return false;
+            return columnIndex == editableColumn;
         }
     }
 }

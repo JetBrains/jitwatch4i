@@ -8,6 +8,7 @@ package org.adoptopenjdk.jitwatch.ui.report;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import org.adoptopenjdk.jitwatch.report.Report;
+import org.adoptopenjdk.jitwatch.ui.main.IMemberSelectedListener;
 import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.eliminatedallocation.EliminatedAllocationTable;
 import org.adoptopenjdk.jitwatch.ui.report.inlining.InliningRowBean;
@@ -35,7 +36,7 @@ public class ReportPanel extends JPanel
     private JTextField filterTextField;
     private JButton applyFilterButton;
 
-    public ReportPanel(ReportStageType type, List<Report> reportList)
+    public ReportPanel(IMemberSelectedListener selectionListener, ReportStageType type, List<Report> reportList)
     {
         this.reportList = reportList;
         this.type = type;
@@ -57,13 +58,13 @@ public class ReportPanel extends JPanel
         switch (type)
         {
             case SUGGESTION:
-                table = new SuggestionTable(getReportRowBeanList());
+                table = new SuggestionTable(selectionListener, getReportRowBeanList());
                 break;
             case ELIMINATED_ALLOCATION:
-                table = new EliminatedAllocationTable(getReportRowBeanList());
+                table = new EliminatedAllocationTable(selectionListener, getReportRowBeanList());
                 break;
             case ELIDED_LOCK:
-                table = new OptimisedLockTable(getReportRowBeanList());
+                table = new OptimisedLockTable(selectionListener, getReportRowBeanList());
                 break;
             case INLINING:
                 break;

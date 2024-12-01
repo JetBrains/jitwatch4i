@@ -18,7 +18,6 @@ public class MemberTableCellRenderer extends JPanel implements TableCellRenderer
     private JLabel lblMetaClass;
     private JLabel lblMetaMember;
     private JLabel lblCompilation;
-    private JLabel lblViewBCI;
 
     public MemberTableCellRenderer()
     {
@@ -26,12 +25,10 @@ public class MemberTableCellRenderer extends JPanel implements TableCellRenderer
         lblMetaClass = new JLabel();
         lblMetaMember = new JLabel();
         lblCompilation = new JLabel();
-        lblViewBCI = new JLabel();
 
         add(lblMetaClass);
         add(lblMetaMember);
         add(lblCompilation);
-        add(lblViewBCI);
     }
 
     @Override
@@ -54,19 +51,12 @@ public class MemberTableCellRenderer extends JPanel implements TableCellRenderer
                 String compilationText = compilation != null ? "Compilation: " + compilation.getSignature() : "";
                 lblCompilation.setText(compilationText);
 
-                lblViewBCI.setText("View BCI " + report.getBytecodeOffset());
-                lblViewBCI.setForeground(Color.BLUE.darker());
-                lblViewBCI.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                lblViewBCI.setToolTipText("Click to view BCI");
-
-                lblViewBCI.setVisible(true);
             }
             else
             {
                 lblMetaClass.setText("");
                 lblMetaMember.setText("");
                 lblCompilation.setText("");
-                lblViewBCI.setVisible(false);
             }
         }
         else
@@ -74,7 +64,6 @@ public class MemberTableCellRenderer extends JPanel implements TableCellRenderer
             lblMetaClass.setText("");
             lblMetaMember.setText("");
             lblCompilation.setText("");
-            lblViewBCI.setVisible(false);
         }
 
         if (isSelected)
@@ -83,7 +72,6 @@ public class MemberTableCellRenderer extends JPanel implements TableCellRenderer
             lblMetaClass.setForeground(table.getSelectionForeground());
             lblMetaMember.setForeground(table.getSelectionForeground());
             lblCompilation.setForeground(table.getSelectionForeground());
-            lblViewBCI.setForeground(table.getSelectionForeground());
         }
         else
         {
@@ -91,7 +79,6 @@ public class MemberTableCellRenderer extends JPanel implements TableCellRenderer
             lblMetaClass.setForeground(table.getForeground());
             lblMetaMember.setForeground(table.getForeground());
             lblCompilation.setForeground(table.getForeground());
-            lblViewBCI.setForeground(Color.BLUE.darker());
         }
         return this;
     }

@@ -8,6 +8,7 @@ package org.adoptopenjdk.jitwatch.ui.report.locks;
 import com.intellij.ui.table.JBTable;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.report.Report;
+import org.adoptopenjdk.jitwatch.ui.main.IMemberSelectedListener;
 import org.adoptopenjdk.jitwatch.ui.report.IReportRowBean;
 import org.adoptopenjdk.jitwatch.ui.report.IReportTable;
 import org.adoptopenjdk.jitwatch.ui.report.cell.*;
@@ -23,26 +24,27 @@ public class OptimisedLockTable extends JBTable implements IReportTable
     private JBTable table;
     private List<IReportRowBean> rows;
 
-    public OptimisedLockTable(List<IReportRowBean> rows)
+    public OptimisedLockTable(IMemberSelectedListener selectionListener, List<IReportRowBean> rows)
     {
-        super(new OptimisedLockTableModel(rows));
+        super(new OptimisedLockTableModel(rows, 3));
         this.rows = rows;
 
         TableColumnModel columnModel = getColumnModel();
         int totalWidth = 1000;
-        columnModel.getColumn(0).setPreferredWidth((int) (totalWidth * 0.2));  // Class
-        columnModel.getColumn(1).setPreferredWidth((int) (totalWidth * 0.2));  // Member
-        columnModel.getColumn(2).setPreferredWidth((int) (totalWidth * 0.2));  // Compilation
-        columnModel.getColumn(3).setPreferredWidth((int) (totalWidth * 0.12)); // BCI
-        columnModel.getColumn(4).setPreferredWidth((int) (totalWidth * 0.1));  // How
-        columnModel.getColumn(5).setPreferredWidth((int) (totalWidth * 0.18)); // Optimisation Kind
+        columnModel.getColumn(0).setPreferredWidth((int) (totalWidth * 0.2));
+        columnModel.getColumn(1).setPreferredWidth((int) (totalWidth * 0.2));
+        columnModel.getColumn(2).setPreferredWidth((int) (totalWidth * 0.2));
+        columnModel.getColumn(3).setPreferredWidth((int) (totalWidth * 0.12));
+        columnModel.getColumn(4).setPreferredWidth((int) (totalWidth * 0.1));
+        columnModel.getColumn(5).setPreferredWidth((int) (totalWidth * 0.18));
 
-        getColumnModel().getColumn(0).setCellRenderer(new TextTableCellRenderer()); // Class
-        getColumnModel().getColumn(1).setCellRenderer(new TextTableCellRenderer()); // Member
-        getColumnModel().getColumn(2).setCellRenderer(new TextTableCellRenderer()); // Compilation
-        getColumnModel().getColumn(3).setCellRenderer(new LinkedBCICellRenderer()); // BCI
-        getColumnModel().getColumn(4).setCellRenderer(new TextTableCellRenderer()); // How
-        getColumnModel().getColumn(5).setCellRenderer(new TextTableCellRenderer()); // Optimisation Kind
+        getColumnModel().getColumn(0).setCellRenderer(new TextTableCellRenderer());
+        getColumnModel().getColumn(1).setCellRenderer(new TextTableCellRenderer());
+        getColumnModel().getColumn(2).setCellRenderer(new TextTableCellRenderer());
+        getColumnModel().getColumn(3).setCellRenderer(new ButtonCellRenderer());
+        getColumnModel().getColumn(3).setCellEditor(new ButtonCellEditor(selectionListener));
+        getColumnModel().getColumn(4).setCellRenderer(new TextTableCellRenderer());
+        getColumnModel().getColumn(5).setCellRenderer(new TextTableCellRenderer());
 
         addMouseListener(new MouseAdapter()
         {
@@ -85,13 +87,15 @@ public class OptimisedLockTable extends JBTable implements IReportTable
     public static class OptimisedLockTableModel extends AbstractTableModel
     {
         private List<IReportRowBean> rows;
+        private final int editableColumn;
         private final String[] columnNames = {
                 "Class", "Member", "Compilation", "BCI", "How", "Optimisation Kind"
         };
 
-        public OptimisedLockTableModel(List<IReportRowBean> rows)
+        public OptimisedLockTableModel(List<IReportRowBean> rows, int editableColumn)
         {
             this.rows = rows;
+            this.editableColumn = editableColumn;
         }
 
         public void setRows(List<IReportRowBean> rows)
@@ -156,7 +160,7 @@ public class OptimisedLockTable extends JBTable implements IReportTable
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex)
         {
-            return false;
+            return columnIndex == editableColumn;
         }
     }
 }

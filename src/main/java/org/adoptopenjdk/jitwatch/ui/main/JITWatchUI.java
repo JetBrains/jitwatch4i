@@ -1023,19 +1023,19 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
     {
         if (optimisedLockPanel == null)
         {
-            optimisedLockPanel = new ReportPanel(ReportStageType.ELIDED_LOCK, reportListEliminatedAllocations);
+            optimisedLockPanel = new ReportPanel(this, ReportStageType.ELIDED_LOCK, reportListOptimisedLocks);
             optimizedLockContent = contentManager.getFactory().createContent(optimisedLockPanel, optimisedLockPanel.getTitle(), false);
             contentManager.addContent(optimizedLockContent, 1);
         }
         if (suggestionReportPanel == null)
         {
-            suggestionReportPanel = new ReportPanel(ReportStageType.SUGGESTION, reportListEliminatedAllocations);
+            suggestionReportPanel = new ReportPanel(this, ReportStageType.SUGGESTION, reportListSuggestions);
             suggestionReportContent = contentManager.getFactory().createContent(suggestionReportPanel, suggestionReportPanel.getTitle(), false);
             contentManager.addContent(suggestionReportContent, 1);
         }
         if (ellimAllocsReportPanel == null)
         {
-            ellimAllocsReportPanel = new ReportPanel(ReportStageType.ELIMINATED_ALLOCATION, reportListEliminatedAllocations);
+            ellimAllocsReportPanel = new ReportPanel(this, ReportStageType.ELIMINATED_ALLOCATION, reportListEliminatedAllocations);
             ellimAllocsReportContent = contentManager.getFactory().createContent(ellimAllocsReportPanel, ellimAllocsReportPanel.getTitle(), false);
             contentManager.addContent(ellimAllocsReportContent, 1);
         }
@@ -1048,39 +1048,39 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
         }
         if (codeCacheBlocksPanel == null)
         {
-            codeCacheBlocksPanel = new CodeCacheLayoutPanel(JITWatchUI.this);
+            codeCacheBlocksPanel = new CodeCacheLayoutPanel(this);
             codeCacheBlocksContent = contentManager.getFactory().createContent(codeCacheBlocksPanel, codeCacheBlocksPanel.getTitle(), false);
             contentManager.addContent(codeCacheBlocksContent, 1);
             listenerCompilationChanged.add(codeCacheBlocksPanel);
         }
         if (codeCacheTimelinePanel == null)
         {
-            codeCacheTimelinePanel = new CodeCachePanel(JITWatchUI.this);
+            codeCacheTimelinePanel = new CodeCachePanel(this);
             codeCacheTimelineContent = contentManager.getFactory().createContent(codeCacheTimelinePanel, codeCacheTimelinePanel.getTitle(), false);
             contentManager.addContent(codeCacheTimelineContent, 1);
         }
         if (histoPanel == null)
         {
-            histoPanel = new HistoPanel(JITWatchUI.this);
+            histoPanel = new HistoPanel(this);
             histoContent = contentManager.getFactory().createContent(histoPanel, histoPanel.getTitle(), false);
             contentManager.addContent(histoContent, 1);
         }
         if (timeLinePanel == null)
         {
-            timeLinePanel = new TimeLinePanel(JITWatchUI.this);
+            timeLinePanel = new TimeLinePanel(this);
             timeLineContent = contentManager.getFactory().createContent(timeLinePanel, timeLinePanel.getTitle(), false);
             contentManager.addContent(timeLineContent, 1);
         }
         if (compilerThreadPanel == null)
         {
-            compilerThreadPanel = new CompilerThreadPanel(JITWatchUI.this);
+            compilerThreadPanel = new CompilerThreadPanel(this);
             compilerThreadContent = contentManager.getFactory().createContent(compilerThreadPanel, compilerThreadPanel.getTitle(), false);
             contentManager.addContent(compilerThreadContent, 1);
             listenerCompilationChanged.add(compilerThreadPanel);
         }
         if (topListPanel == null)
         {
-            topListPanel = new TopListPanel(JITWatchUI.this, getJITDataModel());
+            topListPanel = new TopListPanel(this, getJITDataModel());
             topListContent = contentManager.getFactory().createContent(topListPanel, topListPanel.getTitle(), false);
             contentManager.addContent(topListContent, 1);
         }
