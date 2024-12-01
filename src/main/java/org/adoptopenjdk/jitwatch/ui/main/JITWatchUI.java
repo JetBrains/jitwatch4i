@@ -831,28 +831,31 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
                 codeToolWindowManager.openClassAtMember(member);
             }
 
-            for (Compilation compilation : selectedMember.getCompilations())
+            if (selectedMember != null)
             {
-                CompilationTableRow row = new CompilationTableRow(compilation);
+                for (Compilation compilation : selectedMember.getCompilations())
+                {
+                    CompilationTableRow row = new CompilationTableRow(compilation);
 
-                Object[] rowData = new Object[compilationTableColumnNames.length];
+                    Object[] rowData = new Object[compilationTableColumnNames.length];
 
-                rowData[0] = row.getStampQueued();
-                rowData[1] = row.getStampCompilationStart();
-                rowData[2] = row.getStampNMethodEmitted();
-                rowData[3] = row.getNative();
-                rowData[4] = row.getCompiler();
-                rowData[5] = row.getLevel();
+                    rowData[0] = row.getStampQueued();
+                    rowData[1] = row.getStampCompilationStart();
+                    rowData[2] = row.getStampNMethodEmitted();
+                    rowData[3] = row.getNative();
+                    rowData[4] = row.getCompiler();
+                    rowData[5] = row.getLevel();
 
-                compilationTableModel.addRow(rowData);
-            }
+                    compilationTableModel.addRow(rowData);
+                }
 
-            Compilation selectedCompilation = selectedMember.getSelectedCompilation();
+                Compilation selectedCompilation = selectedMember.getSelectedCompilation();
 
-            if (selectedCompilation != null)
-            {
-                int index = selectedCompilation.getIndex();
-                compilationTable.getSelectionModel().setSelectionInterval(index, index);
+                if (selectedCompilation != null)
+                {
+                    int index = selectedCompilation.getIndex();
+                    compilationTable.getSelectionModel().setSelectionInterval(index, index);
+                }
             }
         }
 
