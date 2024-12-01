@@ -152,7 +152,6 @@ public class TimeLinePanel extends AbstractGraphPanel
     {
         FontMetrics metrics = g2d.getFontMetrics();
         int labelWidth = metrics.stringWidth(label);
-        int labelHeight = metrics.getHeight();
 
         int labelX = labelLeft ? (int) (blobX - labelWidth - 16) : (int) (blobX + 16);
         int labelY = (int) Math.min(blobY, graphGapTop + chartHeight - 32);
@@ -165,11 +164,11 @@ public class TimeLinePanel extends AbstractGraphPanel
 
     private void drawEvents(Graphics2D g2d, List<JITEvent> events)
     {
-        Color colourMarker = Color.BLUE;
+        Color colourTotal = Color.BLACK;
         float lineWidth = 2.0f;
         g2d.setStroke(new BasicStroke(lineWidth));
 
-        int cumC = 0;
+        int cumTotal = 0;
         double lastCX = graphGapLeft + normaliseX(minX);
         double lastCY = graphGapTop + normaliseY(0);
 
@@ -178,10 +177,10 @@ public class TimeLinePanel extends AbstractGraphPanel
         for (JITEvent event : events)
         {
             long stamp = event.getStamp();
-            cumC++;
+            cumTotal++;
 
             double x = graphGapLeft + normaliseX(stamp);
-            double y = graphGapTop + normaliseY(cumC);
+            double y = graphGapTop + normaliseY(cumTotal);
 
             if (selectedMember != null)
             {
@@ -192,14 +191,52 @@ public class TimeLinePanel extends AbstractGraphPanel
                 }
             }
 
-            g2d.setColor(colourMarker);
+            g2d.setColor(colourTotal);
             g2d.drawLine((int) lastCX, (int) lastCY, (int) x, (int) y);
 
             lastCX = x;
             lastCY = y;
         }
 
-        continueLineToEndOfXAxis(g2d, lastCX, lastCY, colourMarker, lineWidth);
+        continueLineToEndOfXAxis(g2d, lastCX, lastCY, colourTotal, lineWidth);
+
+        drawLevelGraph(g2d, 1, events, Color.BLUE, lineWidth);
+        drawLevelGraph(g2d, 2, events, Color.RED, lineWidth);
+        drawLevelGraph(g2d, 3, events, Color.MAGENTA, lineWidth);
+        drawLevelGraph(g2d, 4, events, Color.GREEN, lineWidth);
+
+    }
+
+    private void drawLevelGraph(Graphics2D g2d, int level, List<JITEvent> events, Color color, float lineWidth)
+    {
+        int cumLevel = 0;
+
+        double lastCX = graphGapLeft + normaliseX(minX);
+        double lastCY = graphGapTop + normaliseY(0);
+
+        g2d.setStroke(new BasicStroke(lineWidth));
+
+        for (JITEvent event : events)
+        {
+            if (event.getLevel() == level)
+            {
+                cumLevel++;
+            }
+
+            long stamp = event.getStamp();
+
+            double x = graphGapLeft + normaliseX(stamp);
+
+            double y = graphGapTop + normaliseY(cumLevel);
+
+            g2d.setColor(color);
+            g2d.drawLine((int) lastCX, (int) lastCY, (int) x, (int) y);
+
+            lastCX = x;
+            lastCY = y;
+        }
+
+        continueLineToEndOfXAxis(g2d, lastCX, lastCY, color, lineWidth);
     }
 
     private void showSelectedMemberLabel(Graphics2D g2d)
@@ -256,10 +293,14 @@ public class TimeLinePanel extends AbstractGraphPanel
     {
         JITStats stats = mainUI.getJITDataModel().getJITStats();
         String statsText = String.format(
-                "Total Compilations: %d (C1: %d) (C2: %d) (C2N: %d) (OSR: %d)",
-                stats.getTotalCompiledMethods(), stats.getCountC1(), stats.getCountC2(),
-                stats.getCountC2N(), stats.getCountOSR()
+                "Total Compilations: %d (L1[blue]: %d) (L2(red): %d) (L3(magenta): %d) (L4(green): %d)",
+                stats.getTotalCompiledMethods(),
+                stats.getCountLevel1(),
+                stats.getCountLevel2(),
+                stats.getCountLevel3(),
+                stats.getCountLevel4()
         );
+
         g2d.drawString(statsText, (int) graphGapLeft,  (int) (graphGapTop+stdFontSize)/2);
     }
 }

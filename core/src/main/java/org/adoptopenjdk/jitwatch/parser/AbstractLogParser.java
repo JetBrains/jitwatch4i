@@ -584,10 +584,6 @@ public abstract class AbstractLogParser implements ILogParser
 			case QUEUE:
 			{
 				setTagTaskQueued(tag, metaMember);
-
-				JITEvent queuedEvent = new JITEvent(stampTime, type, metaMember);
-				model.addEvent(queuedEvent);
-				logEvent(queuedEvent);
 			}
 				break;
 			case NMETHOD_C1:
@@ -600,10 +596,6 @@ public abstract class AbstractLogParser implements ILogParser
 			{
 				setTagNMethod(tag, metaMember);
 				metaMember.getMetaClass().incCompiledMethodCount();
-
-				JITEvent compiledEvent = new JITEvent(stampTime, type, metaMember);
-				model.addEvent(compiledEvent);
-				logEvent(compiledEvent);
 			}
 				break;
 			case TASK:
@@ -611,6 +603,20 @@ public abstract class AbstractLogParser implements ILogParser
 				setTagTask((Task) tag, metaMember);
 				currentMember = metaMember;
 				model.updateStats(metaMember, attrs);
+
+				int level = 4;
+
+				try
+				{
+					level = Integer.valueOf(attrs.get("level"));
+				}
+				catch (Exception e)
+				{
+				}
+
+				JITEvent compiledEvent = new JITEvent(stampTime, type, metaMember, level);
+				model.addEvent(compiledEvent);
+				logEvent(compiledEvent);
 			}
 				break;
 			default:

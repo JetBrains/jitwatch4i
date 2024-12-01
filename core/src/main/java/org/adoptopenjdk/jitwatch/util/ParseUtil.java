@@ -376,6 +376,22 @@ public final class ParseUtil
 		return classes.toArray(new Class<?>[classes.size()]);
 	}
 
+	public static String[] getClassNames(String typesString) throws LogParseException
+	{
+		List<String> classNames = null;
+
+		try
+		{
+			classNames = findClassNamesForTypeString(typesString);
+		}
+		catch (Throwable t)
+		{
+			throw new LogParseException("Could not parse types: " + typesString, t);
+		}
+
+		return classNames.toArray(new String[classNames.size()]);
+	}
+
 	public static Class<?> findClassForLogCompilationParameter(String param) throws ClassNotFoundException
 	{
 		StringBuilder builder = new StringBuilder();
@@ -822,6 +838,36 @@ public final class ParseUtil
 			}
 
 			result.add(clazz);
+		}
+
+		return result;
+	}
+
+	public static List<String> findClassNamesForTypeString(final String typesString) throws ClassNotFoundException
+	{
+		List<String> result = new ArrayList<>();
+
+		List<String> typeNames = parseTypeString(typesString);
+
+		for (String typeName : typeNames)
+		{
+			String className = null;
+
+			if (typeName.length() == 1)
+			{
+				className = getPrimitiveClass(typeName.charAt(0)).getName();
+			}
+			else
+			{
+				if (looksLikeSyntheticBridgeConstructorParam(typeName))
+				{
+					logger.debug("Not attempting to classload synthetic bridge constructor arg: {}", typeName);
+					continue;
+				}
+				className = typeName;
+			}
+
+			result.add(className);
 		}
 
 		return result;

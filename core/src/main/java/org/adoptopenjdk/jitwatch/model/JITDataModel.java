@@ -5,19 +5,6 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.MODIFIERS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.OSR;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -34,6 +21,8 @@ import org.adoptopenjdk.jitwatch.model.bytecode.SourceMapper;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.logger.Logger;
 import org.adoptopenjdk.jitwatch.logger.LoggerFactory;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class JITDataModel implements IReadOnlyJITDataModel
 {
@@ -191,6 +180,32 @@ public class JITDataModel implements IReadOnlyJITDataModel
 					logger.error("Exception: {}", t.getMessage(), t);
 				}
 			}
+		}
+
+		String level = attrs.get(ATTR_LEVEL);
+
+		if (level != null)
+		{
+			if ("1".equals(level))
+			{
+				stats.incCountLevel1();
+			}
+			else if ("2".equals(level))
+			{
+				stats.incCountLevel2();
+			}
+			else if ("3".equals(level))
+			{
+				stats.incCountLevel3();
+			}
+			else if ("4".equals(level))
+			{
+				stats.incCountLevel4();
+			}
+		}
+		else
+		{
+			stats.incCountLevel4();
 		}
 
 		String compiler = attrs.get(ATTR_COMPILER);

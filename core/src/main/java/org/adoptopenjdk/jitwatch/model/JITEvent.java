@@ -15,12 +15,14 @@ public class JITEvent
     private long stamp;
     private EventType eventType;
     private IMetaMember eventMember;
+    private int level;
 
-    public JITEvent(long stamp, EventType eventType, IMetaMember eventMember)
+    public JITEvent(long stamp, EventType eventType, IMetaMember eventMember, int level)
     {
         this.stamp = stamp;
         this.eventType = eventType;
         this.eventMember = eventMember;
+        this.level = level;
     }
 
     public long getStamp()
@@ -38,6 +40,11 @@ public class JITEvent
         return eventMember;
     }
 
+    public int getLevel()
+    {
+        return level;
+    }
+
     @Override
     public String toString()
     {
@@ -47,7 +54,8 @@ public class JITEvent
 
         sb.append(StringUtil.alignRight(eventType.getText(), 14)).append(C_SPACE).append(C_COLON).append(C_SPACE);
      
-        sb.append(eventMember.toString());
+        sb.append(eventMember.toString()).append(C_SPACE);
+        sb.append(level);
 
         return sb.toString();
     }

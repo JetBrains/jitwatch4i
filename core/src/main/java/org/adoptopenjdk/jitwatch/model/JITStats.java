@@ -31,6 +31,11 @@ public class JITStats
 	private long countMethod = 0;
 	private long countConstructor = 0;
 
+	private long countLevel1 = 0;
+	private long countLevel2 = 0;
+	private long countLevel3 = 0;
+	private long countLevel4 = 0;
+
 	public void reset()
 	{
 		countPrivate = 0;
@@ -54,6 +59,11 @@ public class JITStats
 		countClass = 0;
 		countMethod = 0;
 		countConstructor = 0;
+
+		countLevel1 = 0;
+		countLevel2 = 0;
+		countLevel3 = 0;
+		countLevel4 = 0;
 	}
 
 	public void recordDelay(long delay)
@@ -258,11 +268,72 @@ public class JITStats
 
 	public long getTotalCompiledMethods()
 	{
-		return countC1 + countC2 + countC2N;
+		return countLevel1 + countLevel2 + countLevel3 + countLevel4;
 	}
 
 	public long getNativeBytes()
 	{
 		return nativeBytes;
 	}
+
+	public long getCountLevel1()
+	{
+		return countLevel1;
+	}
+
+	public void setCountLevel1(long countLevel1)
+	{
+		this.countLevel1 = countLevel1;
+	}
+
+	public void incCountLevel1()
+	{
+		countLevel1 ++;
+	}
+
+	public long getCountLevel2()
+	{
+		return countLevel2;
+	}
+
+	public void setCountLevel2(long countLevel2)
+	{
+		this.countLevel2 = countLevel2;
+	}
+
+	public void incCountLevel2()
+	{
+		countLevel2 ++;
+	}
+
+	public long getCountLevel3()
+	{
+		return countLevel3;
+	}
+
+	public void setCountLevel3(long countLevel3)
+	{
+		this.countLevel3 = countLevel3;
+	}
+
+	public void incCountLevel3()
+	{
+		countLevel3 ++;
+	}
+
+	public long getCountLevel4()
+	{
+		return countLevel4;
+	}
+
+	public void setCountLevel4(long countLevel4)
+	{
+		this.countLevel4 = countLevel4;
+	}
+
+	public void incCountLevel4()
+	{
+		countLevel4 ++;
+	}
+
 }
