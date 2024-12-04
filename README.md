@@ -24,5 +24,5 @@ Alternatively, you can add the logging options to the VM options of your run con
 ## Credits
 This plugin is based on:
 - [JitWatch](https://github.com/AdoptOpenJDK/jitwatch) by Chris Newland.
-- [jitwatch-intellij](https://github.com/yole/jitwatch-intellij).
+- [jitwatch-intellij](https://github.com/yole/jitwatch-intellij) by Dmitry Jemerov
 
