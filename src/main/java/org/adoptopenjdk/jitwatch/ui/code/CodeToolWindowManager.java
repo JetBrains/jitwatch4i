@@ -13,6 +13,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.OpenSourceUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
@@ -38,12 +39,19 @@ public class CodeToolWindowManager implements ICompilationChangeListener
     private int lastEditorBytecodeOffset;
     private int lastEditorCaretLinePosition;
 
-    public CodeToolWindowManager(Project project, ToolWindow toolWindow, ViewerByteCode byteCodePanel, ViewerAssembly assemblyPanel)
+    public CodeToolWindowManager(Project project, ToolWindow toolWindow)
     {
         this.project = project;
         this.toolWindow = toolWindow;
-        this.byteCodePanel = byteCodePanel;
-        this.assemblyPanel = assemblyPanel;
+
+        this.byteCodePanel = new ViewerByteCode(project);
+        toolWindow.getContentManager().addContent(
+                ContentFactory.getInstance().createContent(byteCodePanel, "ByteCode", false)
+        );
+        this.assemblyPanel = new ViewerAssembly(project);
+        toolWindow.getContentManager().addContent(
+                ContentFactory.getInstance().createContent(assemblyPanel, "Asm", false)
+        );
 
         this.modelService = JitWatchModelService.getInstance(project);
 

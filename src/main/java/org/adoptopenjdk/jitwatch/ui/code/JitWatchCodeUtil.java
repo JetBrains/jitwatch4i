@@ -21,27 +21,14 @@ public class JitWatchCodeUtil
     {
         CodeToolWindowManager result = null;
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-        ToolWindow existingToolWindow = getToolWindow(project);
-        if (existingToolWindow == null)
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID);
+        if (toolWindow == null)
         {
-            ToolWindow toolWindow = toolWindowManager.registerToolWindow(
-                    TOOL_WINDOW_ID, false, ToolWindowAnchor.RIGHT, project, true);
-            ViewerByteCode byteCodePanel = new ViewerByteCode(project);
-            toolWindow.getContentManager().addContent(
-                    ContentFactory.getInstance().createContent(byteCodePanel, "ByteCode", false)
-            );
-            ViewerAssembly assemblyPanel = new ViewerAssembly(project);
-            toolWindow.getContentManager().addContent(
-                    ContentFactory.getInstance().createContent(assemblyPanel, "Asm", false)
-            );
-            result = new CodeToolWindowManager(project, toolWindow, byteCodePanel, assemblyPanel);
+            toolWindow = toolWindowManager.registerToolWindow(TOOL_WINDOW_ID, false, ToolWindowAnchor.RIGHT,
+                    project, true);
+            result = new CodeToolWindowManager(project, toolWindow);
         }
         return result;
-    }
-
-    public static ToolWindow getToolWindow(Project project)
-    {
-        return ToolWindowManager.getInstance(project).getToolWindow(TOOL_WINDOW_ID);
     }
 
     public static List<BytecodeInstruction> findInstructionsForSourceLine(MemberBytecode memberBytecode, int sourceLine)
