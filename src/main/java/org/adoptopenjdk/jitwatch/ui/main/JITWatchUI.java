@@ -240,6 +240,7 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
                 metaClassSelectedFromClassTree(null);
                 logPanel.clear();
                 notifyCompilationChanged(null);
+                closeAllTabs();
             }
         });
     }
@@ -376,6 +377,7 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
             public void actionPerformed(@NotNull AnActionEvent e)
             {
                 logParser.reset();
+                JitWatchModelService.getInstance(project).setParserResult(null);
                 clear();
             }
         };

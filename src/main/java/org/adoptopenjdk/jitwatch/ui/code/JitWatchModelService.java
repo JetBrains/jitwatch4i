@@ -62,7 +62,7 @@ public class JitWatchModelService
 
     public void setParserResult(ILogParser parser)
     {
-        model = parser.getModel();
+        model = parser != null ? parser.getModel(): null;
 
         SwingUtilities.invokeLater(() ->
         {
