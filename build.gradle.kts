@@ -31,7 +31,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("232")
-        untilBuild.set("242.*")
+        untilBuild.set("243.*")
     }
 
     signPlugin {
@@ -45,6 +45,6 @@ tasks {
     }
 
     runIde {
-        jvmArgs("-Xmx8G", "-Xms2G", "-XX:+AllowEnhancedClassRedefinition")
+        jvmArgs("-Xmx8G", "-Xms2G")
     }
 }
