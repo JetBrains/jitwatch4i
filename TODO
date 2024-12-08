@@ -1,0 +1,11 @@
+- fix compilation selection
+- Inner classes generics
+- Kotlin classes
+- Asm code highliting
+- load bytecode from jar files
+- improve perf of tab Comp.Activity
+- improve perf of tab Timeline
+- improve perf of tab Histo
+- tab Comp.Chain to tree component
+- Main with tree table & aggregated times per node
+- search in main tab (filter)
