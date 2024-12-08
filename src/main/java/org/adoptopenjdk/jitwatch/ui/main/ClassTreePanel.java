@@ -226,17 +226,9 @@ public class ClassTreePanel extends JPanel
         {
             boolean allowed = true;
 
-            if (packageClass.isInterface() && config.isHideInterfaces())
+            if (!packageClass.hasCompiledMethods() && config.isShowOnlyCompiledClasses())
             {
                 allowed = false;
-            }
-
-            if (allowed)
-            {
-                if (!packageClass.hasCompiledMethods() && config.isShowOnlyCompiledClasses())
-                {
-                    allowed = false;
-                }
             }
 
             if (allowed)

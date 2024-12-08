@@ -5,16 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_MEMBER_CREATION;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_MEMBER_CREATION;
 
 public class MetaMethod extends AbstractMetaMember
 {
     private String methodToString;
+    private MemberSignatureParts msp;
 
     public MetaMethod(Method method, MetaClass methodClass)
     {
@@ -23,8 +24,12 @@ public class MetaMethod extends AbstractMetaMember
         this.methodToString = method.toString();
         this.metaClass = methodClass;
 
-        returnType = method.getReturnType();
-        paramTypes = Arrays.asList(method.getParameterTypes());
+        returnTypeName = method.getReturnType().getName();
+        paramTypesNames = new ArrayList<>();
+        for (Class<?> paramType : method.getParameterTypes())
+        {
+            paramTypesNames.add(paramType.getName());
+        }
 
         // Can include non-method modifiers such as volatile so AND with
         // acceptable values
@@ -40,14 +45,37 @@ public class MetaMethod extends AbstractMetaMember
         }
     }
 
-    public void setParamTypes(List<Class<?>> types)
+    public MetaMethod(MemberSignatureParts msp, MetaClass metaClass)
     {
-    	this.paramTypes = types;
+        super(msp.getMemberName());
+
+        this.msp = msp;
+        this.methodToString = msp.toStringSingleLine();
+        this.metaClass = metaClass;
+
+        returnTypeName = msp.getReturnType();
+        paramTypesNames = msp.getParamTypes();
+
+        // Can include non-method modifiers such as volatile so AND with
+        // acceptable values
+        modifier = Modifier.PUBLIC;
+
+        isVarArgs = false;
+
+        if (DEBUG_MEMBER_CREATION)
+        {
+            logger.debug("Created MetaMethod: {}", toString());
+        }
+    }
+
+    public void setParamTypesNames(List<String> typesNames)
+    {
+    	this.paramTypesNames = typesNames;
     }
     
-    public void setReturnType(Class<?> returnType)
+    public void setReturnTypeName(String returnTypeName)
     {
-    	this.returnType = returnType;
+    	this.returnTypeName = returnTypeName;
     }
 
     @Override
@@ -63,5 +91,15 @@ public class MetaMethod extends AbstractMetaMember
         }
 
         return methodSigWithoutThrows;
+    }
+
+    @Override
+    public boolean matchesSignature(MemberSignatureParts msp, boolean matchTypesExactly)
+    {
+        if (this.msp == null)
+        {
+            return super.matchesSignature(msp, matchTypesExactly);
+        }
+        return this.msp.equals(msp);
     }
 }

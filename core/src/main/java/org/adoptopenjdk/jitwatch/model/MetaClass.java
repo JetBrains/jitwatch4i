@@ -33,7 +33,6 @@ public class MetaClass implements Comparable<MetaClass>
 	private String className;
 	private MetaPackage classPackage;
 
-	private boolean isInterface = false;
 	private boolean missingDef = false;
 
 	private List<IMetaMember> classMethods = new CopyOnWriteArrayList<>();
@@ -67,11 +66,6 @@ public class MetaClass implements Comparable<MetaClass>
 		return result;
 	}
 
-	public boolean isInterface()
-	{
-		return isInterface;
-	}
-
 	public void incCompiledMethodCount()
 	{
 		compiledMethodCount++;
@@ -80,11 +74,6 @@ public class MetaClass implements Comparable<MetaClass>
 	public boolean hasCompiledMethods()
 	{
 		return compiledMethodCount > 0;
-	}
-
-	public void setInterface(boolean isInterface)
-	{
-		this.isInterface = isInterface;
 	}
 
 	public boolean isMissingDef()
@@ -221,11 +210,11 @@ public class MetaClass implements Comparable<MetaClass>
 	{
 		if (member instanceof MetaConstructor)
 		{
-			classMethods.add(member);
+			classConstructors.add(member);
 		}
 		else
 		{
-			classConstructors.add(member);
+			classMethods.add(member);
 		}
 	}
 

@@ -207,28 +207,28 @@ public final class ParseUtil
 		return result;
 	}
 
-	public static Class<?> getPrimitiveClass(char c)
+	public static String getPrimitiveClassName(char c)
 	{
 		switch (c)
 		{
 		case TYPE_SHORT:
-			return Short.TYPE;
+			return Short.TYPE.getName();
 		case TYPE_CHARACTER:
-			return Character.TYPE;
+			return Character.TYPE.getName();
 		case TYPE_BYTE:
-			return Byte.TYPE;
+			return Byte.TYPE.getName();
 		case TYPE_VOID:
-			return Void.TYPE;
+			return Void.TYPE.getName();
 		case TYPE_LONG:
-			return Long.TYPE;
+			return Long.TYPE.getName();
 		case TYPE_DOUBLE:
-			return Double.TYPE;
+			return Double.TYPE.getName();
 		case TYPE_BOOLEAN:
-			return Boolean.TYPE;
+			return Boolean.TYPE.getName();
 		case TYPE_INTEGER:
-			return Integer.TYPE;
+			return Integer.TYPE.getName();
 		case TYPE_FLOAT:
-			return Float.TYPE;
+			return Float.TYPE.getName();
 		}
 
 		throw new RuntimeException("Unknown class for " + c);
@@ -360,22 +360,6 @@ public final class ParseUtil
 		return metaMember;
 	}
 
-	public static Class<?>[] getClassTypes(String typesString) throws LogParseException
-	{
-		List<Class<?>> classes = null;
-
-		try
-		{
-			classes = findClassesForTypeString(typesString);
-		}
-		catch (Throwable t)
-		{
-			throw new LogParseException("Could not parse types: " + typesString, t);
-		}
-
-		return classes.toArray(new Class<?>[classes.size()]);
-	}
-
 	public static String[] getClassNames(String typesString) throws LogParseException
 	{
 		List<String> classNames = null;
@@ -392,13 +376,13 @@ public final class ParseUtil
 		return classNames.toArray(new String[classNames.size()]);
 	}
 
-	public static Class<?> findClassForLogCompilationParameter(String param) throws ClassNotFoundException
+	public static String findClassNameForLogCompilationParameter(String param) throws ClassNotFoundException
 	{
 		StringBuilder builder = new StringBuilder();
 
 		if (isPrimitive(param))
 		{
-			return classForPrimitive(param);
+			return classNameForPrimitive(param);
 		}
 		else
 		{
@@ -417,7 +401,7 @@ public final class ParseUtil
 
 					if (isPrimitive(partBeforeDots))
 					{
-						builder.append(S_OPEN_ANGLE).append(classForPrimitive(partBeforeDots));
+						builder.append(S_OPEN_ANGLE).append(classNameForPrimitive(partBeforeDots));
 					}
 					else
 					{
@@ -459,7 +443,7 @@ public final class ParseUtil
 				}
 			}
 
-			return ClassUtil.loadClassWithoutInitialising(builder.toString());
+			return builder.toString();
 		}
 	}
 
@@ -481,18 +465,17 @@ public final class ParseUtil
 		return result;
 	}
 
-	public static boolean paramClassesMatch(boolean memberHasVarArgs, List<Class<?>> memberParamClasses,
-			List<Class<?>> signatureParamClasses, boolean matchTypesExactly)
+	public static boolean paramClassesMatch(boolean memberHasVarArgs, List<String> memberParamClassesNames,
+			List<String> signatureParamClassesNames, boolean matchTypesExactly)
 	{
 		boolean result = true;
 
-		final int memberParamCount = memberParamClasses.size();
-		final int signatureParamCount = signatureParamClasses.size();
+		final int memberParamCount = memberParamClassesNames.size();
+		final int signatureParamCount = signatureParamClassesNames.size();
 
 		if (DEBUG_LOGGING_SIG_MATCH)
 		{
-			logger
-					.debug("MemberParamCount:{} SignatureParamCount:{} varArgs:{}", memberParamCount, signatureParamCount,
+			logger.debug("MemberParamCount:{} SignatureParamCount:{} varArgs:{}", memberParamCount, signatureParamCount,
 							memberHasVarArgs);
 		}
 
@@ -531,36 +514,36 @@ public final class ParseUtil
 
 			for (int sigPos = 0; sigPos < signatureParamCount; sigPos++)
 			{
-				Class<?> sigParamClass = signatureParamClasses.get(sigPos);
+				String sigParamClassName = signatureParamClassesNames.get(sigPos);
 
-				Class<?> memParamClass = memberParamClasses.get(memPos);
+				String memParamClassName = memberParamClassesNames.get(memPos);
 
 				if (DEBUG_LOGGING_SIG_MATCH)
 				{
-					logger.debug("Comparing member param[{}] {} to sig param[{}] {}", memPos, memParamClass, sigPos, sigParamClass);
+					logger.debug("Comparing member param[{}] {} to sig param[{}] {}", memPos, memParamClassName, sigPos, sigParamClassName);
 				}
 
 				boolean classMatch = false;
 
 				if (matchTypesExactly)
 				{
-					classMatch = memParamClass.equals(sigParamClass);
+					classMatch = memParamClassName.equals(sigParamClassName);
 				}
 				else
 				{
-					classMatch = memParamClass.isAssignableFrom(sigParamClass);
+					classMatch = memParamClassName.equals(sigParamClassName);
+					logger.error("matchTypesExactly=false not implemented");
 				}
 
 				if (classMatch)
 				{
 					if (DEBUG_LOGGING_SIG_MATCH)
 					{
-						logger.debug("{} equals/isAssignableFrom {}", memParamClass, sigParamClass);
+						logger.debug("{} equals/isAssignableFrom {}", memParamClassName, sigParamClassName);
 					}
 				}
 				else
 				{
-
 					boolean memberParamCouldBeVarArgs = false;
 
 					boolean isLastParameter = (memPos == memberParamCount - 1);
@@ -572,21 +555,7 @@ public final class ParseUtil
 
 					if (memberParamCouldBeVarArgs)
 					{
-						// check assignable
-						Class<?> componentType = memParamClass.getComponentType();
-
-						if (componentType != null && componentType.isAssignableFrom(sigParamClass))
-						{
-							if (DEBUG_LOGGING_SIG_MATCH)
-							{
-								logger.debug("vararg member param {} equals/isAssignableFrom {}", memParamClass, sigParamClass);
-							}
-						}
-						else
-						{
-							result = false;
-							break;
-						}
+						logger.debug("vararg member param {} approximately {}", memParamClassName, sigParamClassName);
 					}
 					else
 					{
@@ -665,30 +634,30 @@ public final class ParseUtil
 		return result;
 	}
 
-	public static Class<?> classForPrimitive(String primitiveType)
+	public static String classNameForPrimitive(String primitiveType)
 	{
 		if (primitiveType != null)
 		{
 			switch (primitiveType)
 			{
 			case S_TYPE_NAME_INTEGER:
-				return int.class;
+				return int.class.getName();
 			case S_TYPE_NAME_BOOLEAN:
-				return boolean.class;
+				return boolean.class.getName();
 			case S_TYPE_NAME_LONG:
-				return long.class;
+				return long.class.getName();
 			case S_TYPE_NAME_DOUBLE:
-				return double.class;
+				return double.class.getName();
 			case S_TYPE_NAME_FLOAT:
-				return float.class;
+				return float.class.getName();
 			case S_TYPE_NAME_SHORT:
-				return short.class;
+				return short.class.getName();
 			case S_TYPE_NAME_BYTE:
-				return byte.class;
+				return byte.class.getName();
 			case S_TYPE_NAME_CHARACTER:
-				return char.class;
+				return char.class.getName();
 			case S_TYPE_NAME_VOID:
-				return void.class;
+				return void.class.getName();
 			}
 		}
 
@@ -809,40 +778,6 @@ public final class ParseUtil
 		return className != null && className.endsWith("$1");
 	}
 
-	/*
-	 * Converts (III[Ljava.lang.String;) into a list of Class<?>
-	 */
-	public static List<Class<?>> findClassesForTypeString(final String typesString) throws ClassNotFoundException
-	{
-		List<Class<?>> result = new ArrayList<>();
-
-		List<String> typeNames = parseTypeString(typesString);
-
-		for (String typeName : typeNames)
-		{
-			Class<?> clazz = null;
-
-			if (typeName.length() == 1)
-			{
-				clazz = getPrimitiveClass(typeName.charAt(0));
-			}
-			else
-			{
-				if (looksLikeSyntheticBridgeConstructorParam(typeName))
-				{
-					logger.debug("Not attempting to classload synthetic bridge constructor arg: {}", typeName);
-					continue;
-				}
-
-				clazz = ClassUtil.loadClassWithoutInitialising(typeName);
-			}
-
-			result.add(clazz);
-		}
-
-		return result;
-	}
-
 	public static List<String> findClassNamesForTypeString(final String typesString) throws ClassNotFoundException
 	{
 		List<String> result = new ArrayList<>();
@@ -851,11 +786,11 @@ public final class ParseUtil
 
 		for (String typeName : typeNames)
 		{
-			String className = null;
+			String className;
 
 			if (typeName.length() == 1)
 			{
-				className = getPrimitiveClass(typeName.charAt(0)).getName();
+				className = getPrimitiveClassName(typeName.charAt(0));
 			}
 			else
 			{
@@ -1081,7 +1016,14 @@ public final class ParseUtil
 
 			Tag klassTag = parseDictionary.getKlass(klassId);
 
-			metaClassName = klassTag.getAttributes().get(ATTR_NAME).replace(S_SLASH, S_DOT);
+			if (klassTag != null)
+			{
+				metaClassName = klassTag.getAttributes().get(ATTR_NAME).replace(S_SLASH, S_DOT);
+			}
+			else
+			{
+				logger.error("No klass tag for klassId: {}", klassId);
+			}
 		}
 
 		return metaClassName;
@@ -1115,32 +1057,39 @@ public final class ParseUtil
 		{
 			String metaClassName = lookupMetaClassName(methodId, parseDictionary);
 
-			PackageManager pm = model.getPackageManager();
-
-			MetaClass metaClass = pm.getMetaClass(metaClassName);
-
-			if (metaClass == null)
+			if (metaClassName != null)
 			{
-				metaClass = lateLoadMetaClass(model, metaClassName);
+				PackageManager pm = model.getPackageManager();
+
+				MetaClass metaClass = pm.getMetaClass(metaClassName);
+
+				if (metaClass == null)
+				{
+					metaClass = lateLoadMetaClass(model, metaClassName);
+				}
+
+				if (metaClass != null)
+				{
+					String methodName = lookupMethodName(methodId, parseDictionary);
+
+					String returnType = getMethodTagReturn(methodTag, parseDictionary);
+
+					List<String> argumentTypes = getMethodTagArguments(methodTag, parseDictionary);
+
+					MemberSignatureParts msp = MemberSignatureParts
+							.fromParts(metaClass.getFullyQualifiedName(), methodName,
+									returnType, argumentTypes);
+
+					result = metaClass.getMemberForSignature(msp);
+				}
+				else if (!possibleLambdaMethod(metaClassName))
+				{
+					logger.error("metaClass not found: {}", metaClassName);
+				}
 			}
-
-			if (metaClass != null)
+			else
 			{
-				String methodName = lookupMethodName(methodId, parseDictionary);
-
-				String returnType = getMethodTagReturn(methodTag, parseDictionary);
-
-				List<String> argumentTypes = getMethodTagArguments(methodTag, parseDictionary);
-
-				MemberSignatureParts msp = MemberSignatureParts
-																.fromParts(metaClass.getFullyQualifiedName(), methodName,
-																		returnType, argumentTypes);
-
-				result = metaClass.getMemberForSignature(msp);
-			}
-			else if (!possibleLambdaMethod(metaClassName))
-			{
-				logger.error("metaClass not found: {}", metaClassName);
+				logger.error("No metaClass tag for methodId: {}", methodId);
 			}
 		}
 
@@ -1153,37 +1102,7 @@ public final class ParseUtil
 		{
 			logger.debug("metaClass not found: {}. Attempting classload", metaClassName);
 		}
-
-		MetaClass metaClass = null;
-
-		try
-		{
-			Class<?> clazz = ClassUtil.loadClassWithoutInitialising(metaClassName);
-
-			if (clazz != null)
-			{
-				metaClass = model.buildAndGetMetaClass(clazz);
-			}
-		}
-		catch (ClassNotFoundException cnf)
-		{
-			if (!possibleLambdaMethod(metaClassName))
-			{
-				logger.error("ClassNotFoundException: '" + metaClassName + C_QUOTE);
-			}
-		}
-		catch (NoClassDefFoundError ncdf)
-		{
-			logger.error("NoClassDefFoundError: '" + metaClassName + C_SPACE + ncdf.getMessage() + C_QUOTE);
-		}
-		catch (IllegalAccessError iae)
-		{
-			if (!isVMInternalClass(metaClassName))
-			{
-				logger.error("IllegalAccessError: '" + metaClassName + C_SPACE + iae.getMessage() + C_QUOTE);
-			}
-		}
-
+		MetaClass metaClass = model.buildAndGetMetaClass(metaClassName);
 		return metaClass;
 	}
 

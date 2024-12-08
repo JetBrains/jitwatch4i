@@ -31,7 +31,7 @@ public class Logger {
     }
 
     protected void printMessage(String message) {
-        String log = "JITWATCH: " + sdf.format(new Date()) +  " " + message;
+        String log = "JITWatch: " + sdf.format(new Date()) +  " " + message;
         System.out.println(log);
     }
 
@@ -61,7 +61,7 @@ public class Logger {
     }
 
     public boolean isLevelEnabled(Level level) {
-        return true;
+        return level != Level.DEBUG && level != Level.TRACE;
     }
 
     public void log(Level level, String message, Throwable throwable, Object... args) {

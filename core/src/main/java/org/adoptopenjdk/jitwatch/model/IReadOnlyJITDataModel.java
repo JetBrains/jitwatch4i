@@ -5,6 +5,8 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public interface IReadOnlyJITDataModel
@@ -29,7 +31,7 @@ public interface IReadOnlyJITDataModel
     
 	IMetaMember findMetaMember(MemberSignatureParts msp);
     
-	MetaClass buildAndGetMetaClass(Class<?> clazz);
-	
+    MetaClass buildAndGetMetaClass(String fqClassName);
+
 	long getBaseTimestamp();
 }

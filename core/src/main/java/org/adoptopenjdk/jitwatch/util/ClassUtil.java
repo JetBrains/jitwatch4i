@@ -5,17 +5,16 @@
  */
 package org.adoptopenjdk.jitwatch.util;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 import org.adoptopenjdk.jitwatch.loader.DisposableURLClassLoader;
 import org.adoptopenjdk.jitwatch.logger.Logger;
 import org.adoptopenjdk.jitwatch.logger.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_CLASSPATH;
 
 public final class ClassUtil
 {
@@ -23,11 +22,6 @@ public final class ClassUtil
 
 	private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
-	public static void main(String[] args) throws ClassNotFoundException
-	{
-		ClassUtil.loadClassWithoutInitialising(args[0]);
-	}
-	
 	private ClassUtil()
 	{
 	}
@@ -53,20 +47,6 @@ public final class ClassUtil
 		}
 
 		return Class.forName(fqClassName, false, disposableClassLoader);
-	}
-
-	public static Class<?> loadClassWithoutInitialising(String fqClassName, ClassLoader classLoader) throws ClassNotFoundException
-	{
-		return Class.forName(fqClassName, false, classLoader);
-	}
-
-	public static List<String> getCurrentClasspathElements()
-	{
-		String classPath = System.getProperty("java.class.path");
-
-		String[] parts = classPath.split(File.pathSeparator);
-
-		return Arrays.asList(parts);
 	}
 
 	public static void clear()

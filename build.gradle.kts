@@ -45,6 +45,6 @@ tasks {
     }
 
     runIde {
-        jvmArgs("-Xmx8G", "-Xms2G")
+        jvmArgs("-Xmx14G", "-Xms2G", "-XX:+AllowEnhancedClassRedefinition")
     }
 }

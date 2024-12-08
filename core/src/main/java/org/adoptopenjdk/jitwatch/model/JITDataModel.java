@@ -289,6 +289,24 @@ public class JITDataModel implements IReadOnlyJITDataModel
 					break;
 				}
 			}
+
+			if (result == null)
+			{
+				if (msp.getMemberName().equals("<init>"))
+				{
+					MetaConstructor metaConstructor = new MetaConstructor(msp, metaClass);
+					metaClass.addMember(metaConstructor);
+					result = metaConstructor;
+					stats.incCountMethod();
+				}
+				else
+				{
+					MetaMethod metaMethod = new MetaMethod(msp, metaClass);
+					metaClass.addMember(metaMethod);
+					result = metaMethod;
+					stats.incCountMethod();
+				}
+			}
 		}
 		else
 		{
@@ -301,11 +319,9 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		return result;
 	}
 
-	@Override public MetaClass buildAndGetMetaClass(Class<?> clazz)
+	@Override public MetaClass buildAndGetMetaClass(String fqClassName)
 	{
-		MetaClass resultMetaClass = null;
-
-		String fqClassName = clazz.getName();
+		MetaClass resultMetaClass;
 
 		String packageName;
 		String className;
@@ -342,49 +358,6 @@ public class JITDataModel implements IReadOnlyJITDataModel
 		metaPackage.addClass(resultMetaClass);
 
 		stats.incCountClass();
-
-		if (clazz.isInterface())
-		{
-			resultMetaClass.setInterface(true);
-		}
-
-		// Class.getDeclaredMethods() or Class.getDeclaredConstructors()
-		// can cause a NoClassDefFoundError / ClassNotFoundException
-		// for a parameter or return type.
-		try
-		{
-			// TODO HERE check for static
-			for (Method m : clazz.getDeclaredMethods())
-			{
-				MetaMethod metaMethod = new MetaMethod(m, resultMetaClass);
-				resultMetaClass.addMember(metaMethod);
-				stats.incCountMethod();
-			}
-
-			for (Constructor<?> c : clazz.getDeclaredConstructors())
-			{
-				MetaConstructor metaConstructor = new MetaConstructor(c, resultMetaClass);
-				resultMetaClass.addMember(metaConstructor);
-				stats.incCountConstructor();
-			}
-
-		}
-		catch (NoClassDefFoundError ncdfe)
-		{
-			logger.warn("NoClassDefFoundError: '{}' while building class {}", ncdfe.getMessage(), fqClassName);
-			throw ncdfe;
-		}
-		catch (IllegalAccessError iae)
-		{
-			if (!ParseUtil.isVMInternalClass(fqClassName))
-			{
-				logger.error("Something unexpected happened building meta class {}", fqClassName, iae);
-			}
-		}
-		catch (Throwable t)
-		{
-			logger.error("Something unexpected happened building meta class {}", fqClassName, t);
-		}
 
 		return resultMetaClass;
 	}

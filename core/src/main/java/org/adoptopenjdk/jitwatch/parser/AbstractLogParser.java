@@ -5,29 +5,15 @@
  */
 package org.adoptopenjdk.jitwatch.parser;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILER;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_ID;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_COMPILE_KIND;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_FREE_CODE_CACHE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_METHOD;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_NMSIZE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ATTR_STAMP_COMPLETED;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C1;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C2N;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUOTE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.J9;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.ZING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.FALCON;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.JVMCI;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_CODE_CACHE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.TAG_TASK_DONE;
+import org.adoptopenjdk.jitwatch.core.IJITListener;
+import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.core.TagProcessor;
+import org.adoptopenjdk.jitwatch.logger.Logger;
+import org.adoptopenjdk.jitwatch.logger.LoggerFactory;
+import org.adoptopenjdk.jitwatch.model.*;
+import org.adoptopenjdk.jitwatch.model.CodeCacheEvent.CodeCacheEventType;
+import org.adoptopenjdk.jitwatch.util.ClassUtil;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
 
 import java.io.File;
 import java.io.Reader;
@@ -38,27 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.adoptopenjdk.jitwatch.core.IJITListener;
-import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
-import org.adoptopenjdk.jitwatch.core.TagProcessor;
-import org.adoptopenjdk.jitwatch.model.CodeCacheEvent;
-import org.adoptopenjdk.jitwatch.model.CodeCacheEvent.CodeCacheEventType;
-import org.adoptopenjdk.jitwatch.model.Compilation;
-import org.adoptopenjdk.jitwatch.model.CompilerThread;
-import org.adoptopenjdk.jitwatch.model.EventType;
-import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.JITDataModel;
-import org.adoptopenjdk.jitwatch.model.JITEvent;
-import org.adoptopenjdk.jitwatch.model.LogParseException;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.adoptopenjdk.jitwatch.model.ParsedClasspath;
-import org.adoptopenjdk.jitwatch.model.SplitLog;
-import org.adoptopenjdk.jitwatch.model.Tag;
-import org.adoptopenjdk.jitwatch.model.Task;
-import org.adoptopenjdk.jitwatch.util.ClassUtil;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
-import org.adoptopenjdk.jitwatch.logger.Logger;
-import org.adoptopenjdk.jitwatch.logger.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public abstract class AbstractLogParser implements ILogParser
 {
@@ -289,8 +255,6 @@ public abstract class AbstractLogParser implements ILogParser
 			logger.debug("addToClassModel {}", fqClassName);
 		}
 
-		Class<?> clazz = null;
-
 		MetaClass metaClass = model.getPackageManager().getMetaClass(fqClassName);
 
 		if (metaClass != null)
@@ -298,42 +262,7 @@ public abstract class AbstractLogParser implements ILogParser
 			return;
 		}
 
-		try
-		{
-			clazz = ClassUtil.loadClassWithoutInitialising(fqClassName);
-
-			if (clazz != null)
-			{
-				model.buildAndGetMetaClass(clazz);
-			}
-		}
-		catch (ClassNotFoundException cnf)
-		{
-			if (!ParseUtil.possibleLambdaMethod(fqClassName))
-			{
-				logError("ClassNotFoundException: '" + fqClassName + C_QUOTE);
-			}
-		}
-		catch (NoClassDefFoundError ncdf)
-		{
-			logError("NoClassDefFoundError: '" + fqClassName + C_SPACE + "requires " + ncdf.getMessage() + C_QUOTE);
-		}
-		catch (UnsupportedClassVersionError ucve)
-		{
-			hasParseError = true;
-			errorDialogTitle = "UnsupportedClassVersionError for class " + fqClassName;
-			errorDialogBody = "Could not load " + fqClassName + " as the class file version is too recent for this JVM.";
-
-			logError(
-					"UnsupportedClassVersionError! Tried to load a class file with an unsupported format (later version than this JVM)");
-			logger.error("Class file for {} created in a later JVM version", fqClassName, ucve);
-		}
-		catch (Throwable t)
-		{
-			// Possibly a VerifyError
-			logger.error("Could not addClassToModel {}", fqClassName, t);
-			logError("Exception: '" + fqClassName + C_QUOTE);
-		}
+		model.buildAndGetMetaClass(fqClassName);
 	}
 
 	private void logSplitStats()
@@ -621,6 +550,13 @@ public abstract class AbstractLogParser implements ILogParser
 				break;
 			default:
 				break;
+			}
+		}
+		else
+		{
+			if (type == EventType.TASK)
+			{
+				logger.error("MetaMember not found. Signature: {}", signature);
 			}
 		}
 	}

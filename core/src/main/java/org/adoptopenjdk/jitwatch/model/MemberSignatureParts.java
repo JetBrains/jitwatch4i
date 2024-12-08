@@ -385,26 +385,26 @@ public class MemberSignatureParts
 
 	private static void setParamsAndReturn(MemberSignatureParts msp, String paramTypes, String returnType) throws LogParseException
 	{
-		Class<?>[] paramClasses = ParseUtil.getClassTypes(paramTypes);
-		Class<?>[] returnClasses = ParseUtil.getClassTypes(returnType);
+		String[] paramClassesName = ParseUtil.getClassNames(paramTypes);
+		String[] returnClassesNames = ParseUtil.getClassNames(returnType);
 
-		Class<?> returnClass;
+		String returnClassName;
 
-		if (returnClasses.length == 1)
+		if (returnClassesNames.length == 1)
 		{
-			returnClass = returnClasses[0];
+			returnClassName = returnClassesNames[0];
 		}
 		else
 		{
-			returnClass = Void.class;
+			returnClassName = Void.class.getName();
 		}
 
-		for (Class<?> paramClass : paramClasses)
+		for (String paramClassName : paramClassesName)
 		{
-			msp.paramTypeList.add(paramClass.getName());
+			msp.paramTypeList.add(paramClassName);
 		}
 
-		msp.returnType = returnClass.getName();
+		msp.returnType = returnClassName;
 	}
 
 	private void buildGenerics(String genericsString)

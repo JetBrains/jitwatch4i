@@ -56,8 +56,8 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	protected boolean isPolymorphicSignature = false;
 	protected int modifier; // bitset
 	private String memberName;
-	protected Class<?> returnType;
-	protected List<Class<?>> paramTypes;
+	protected String returnTypeName;
+	protected List<String> paramTypesNames;
 
 	public AbstractMetaMember(String memberName)
 	{
@@ -128,18 +128,18 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	private boolean returnTypeMatches(MemberSignatureParts msp) throws ClassNotFoundException
 	{
-		boolean matched = false;
+		boolean matched;
 
 		String returnTypeClassName = msp.applyGenericSubstitutionsForClassLoading(msp.getReturnType());
 
 		if (returnTypeClassName != null)
 		{
-			Class<?> sigReturnType = ParseUtil.findClassForLogCompilationParameter(returnTypeClassName);
-			matched = returnType.equals(sigReturnType);
+			String sigReturnType = ParseUtil.findClassNameForLogCompilationParameter(returnTypeClassName);
+			matched = returnTypeName.equals(sigReturnType);
 
 			if (DEBUG_LOGGING_SIG_MATCH)
 			{
-				logger.debug("Return: '{}' === '{}' ? {}", returnType.getName(), sigReturnType.getName(), matched);
+				logger.debug("Return: '{}' === '{}' ? {}", returnTypeName, sigReturnType, matched);
 			}
 		}
 		else
@@ -184,9 +184,9 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 				{
 					if (returnTypeMatches(msp))
 					{
-						List<Class<?>> mspClassTypes = getClassesForParamTypes(msp);
+						List<String> mspClassTypes = getClassesNamesForParamTypes(msp);
 
-						if (ParseUtil.paramClassesMatch(isVarArgs, this.paramTypes, mspClassTypes, matchTypesExactly))
+						if (ParseUtil.paramClassesMatch(isVarArgs, this.paramTypesNames, mspClassTypes, matchTypesExactly))
 						{
 							result = true;
 						}
@@ -207,17 +207,16 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		return result;
 	}
 
-	private List<Class<?>> getClassesForParamTypes(MemberSignatureParts msp) throws ClassNotFoundException
+	private List<String> getClassesNamesForParamTypes(MemberSignatureParts msp) throws ClassNotFoundException
 	{
-		List<Class<?>> result = new ArrayList<>();
+		List<String> result = new ArrayList<>();
 
 		for (String param : msp.getParamTypes())
 		{
 			String paramClassName = msp.applyGenericSubstitutionsForClassLoading(param);
 
-			Class<?> clazz = ParseUtil.findClassForLogCompilationParameter(paramClassName);
-
-			result.add(clazz);
+			String clazzName = ParseUtil.findClassNameForLogCompilationParameter(paramClassName);
+			result.add(clazzName);
 		}
 
 		return result;
@@ -228,13 +227,13 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		String result = null;
 
-		if (isConstructor() || returnType == null)
+		if (isConstructor() || returnTypeName == null)
 		{
 			result = S_TYPE_NAME_VOID;
 		}
 		else
 		{
-			result = ParseUtil.expandParameterType(returnType.getName());
+			result = ParseUtil.expandParameterType(returnTypeName);
 		}
 
 		return result;
@@ -245,9 +244,9 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 	{
 		List<String> typeNames = new ArrayList<>();
 
-		for (Class<?> paramClass : paramTypes)
+		for (String paramClassName : paramTypesNames)
 		{
-			typeNames.add(ParseUtil.expandParameterType(paramClass.getName()));
+			typeNames.add(ParseUtil.expandParameterType(paramClassName));
 		}
 
 		return typeNames.toArray(new String[typeNames.size()]);
@@ -396,20 +395,20 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 				builder.append(Modifier.toString(modifier)).append(C_SPACE);
 			}
 
-			if (!isConstructor() && returnType != null)
+			if (!isConstructor() && returnTypeName != null)
 			{
-				builder.append(expandParam(returnType.getName(), fqParamTypes)).append(C_SPACE);
+				builder.append(expandParam(returnTypeName, fqParamTypes)).append(C_SPACE);
 			}
 		}
 
 		builder.append(memberName);
 		builder.append(C_OPEN_PARENTHESES);
 
-		if (paramTypes.size() > 0)
+		if (paramTypesNames.size() > 0)
 		{
-			for (Class<?> paramClass : paramTypes)
+			for (String paramClassName : paramTypesNames)
 			{
-				builder.append(expandParam(paramClass.getName(), fqParamTypes)).append(C_COMMA);
+				builder.append(expandParam(paramClassName, fqParamTypes)).append(C_COMMA);
 			}
 
 			builder.deleteCharAt(builder.length() - 1);
@@ -469,9 +468,9 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 
 		// return type of constructor is not declared in signature
-		if (!isConstructor() && returnType != null)
+		if (!isConstructor() && returnTypeName != null)
 		{
-			String rt = expandParamRegEx(returnType.getName());
+			String rt = expandParamRegEx(returnTypeName);
 
 			builder.append(rt);
 			builder.append(C_SPACE);
