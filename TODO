@@ -1,3 +1,5 @@
+- IntelliJ logger backand
+- task_done not found in <task decompiles="1"
 - fix compilation selection
 - Inner classes generics
 - Kotlin classes

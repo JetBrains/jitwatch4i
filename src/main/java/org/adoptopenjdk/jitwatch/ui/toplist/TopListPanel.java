@@ -146,9 +146,6 @@ public class TopListPanel extends JPanel
             }
         });
 
-        tableView.getColumnModel().getColumn(0).setPreferredWidth(100);
-        tableView.getColumnModel().getColumn(1).setPreferredWidth(800);
-        tableView.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
         JPanel comboPanel = new JPanel();
         comboPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -171,6 +168,8 @@ public class TopListPanel extends JPanel
         tableModel.setRowCount(0);
         tableModel.setColumnIdentifiers(topListWrapper.getColumns());
         tableView.removeColumn(tableView.getColumnModel().getColumn(2));
+        tableView.getColumnModel().getColumn(0).setPreferredWidth(100);
+        tableView.getColumnModel().getColumn(1).setPreferredWidth(900);
 
         List<ITopListScore> topList = topListWrapper.getVisitable().buildTopList();
         for (ITopListScore score : topList)
