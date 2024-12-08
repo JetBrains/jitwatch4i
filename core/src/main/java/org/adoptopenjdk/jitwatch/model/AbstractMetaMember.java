@@ -50,8 +50,6 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 
 	private boolean isCompiled = false;
 
-	private Journal journal = new Journal();
-
 	protected boolean isVarArgs = false;
 	protected boolean isPolymorphicSignature = false;
 	protected int modifier; // bitset
@@ -605,11 +603,4 @@ public abstract class AbstractMetaMember implements IMetaMember, Comparable<IMet
 		}
 	}
 
-	public Journal getJournal() {
-		return this.journal;
-	}
-
-	public void addJournalEntry(Tag entry) {
-		this.journal.addEntry(entry);
-	}
 }

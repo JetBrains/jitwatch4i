@@ -16,10 +16,6 @@ public interface IMetaMember
 {
 	MetaClass getMetaClass();
 
-	void addJournalEntry(Tag var1);
-
-	Journal getJournal();
-
 	MemberBytecode getMemberBytecode();
 	
 	List<BytecodeInstruction> getInstructions();
