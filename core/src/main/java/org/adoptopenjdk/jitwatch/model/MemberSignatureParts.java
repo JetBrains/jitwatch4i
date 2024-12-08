@@ -5,45 +5,17 @@
  */
 package org.adoptopenjdk.jitwatch.model;
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_ANGLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_COMMA;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_ANGLE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_QUESTION;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_BYTECODE_STATIC_INITIALISER_SIGNATURE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COMMA;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CONSTRUCTOR_INIT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_DOT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_EMPTY;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_ENTITY_APOS;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_QUOTE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SLASH;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_STATIC_INIT;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_SQUARE_BRACKET;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_OPEN_BRACE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.C_CLOSE_BRACE;
+import org.adoptopenjdk.jitwatch.logger.Logger;
+import org.adoptopenjdk.jitwatch.logger.LoggerFactory;
+import org.adoptopenjdk.jitwatch.util.ParseUtil;
+import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
-import org.adoptopenjdk.jitwatch.util.ParseUtil;
-import org.adoptopenjdk.jitwatch.util.StringUtil;
-import org.adoptopenjdk.jitwatch.logger.Logger;
-import org.adoptopenjdk.jitwatch.logger.LoggerFactory;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class MemberSignatureParts
 {
