@@ -50,11 +50,9 @@ public class MemberSignatureParts
 	private String fullyQualifiedClassName;
 	private int modifier;
 	private List<String> modifierList;
-	private Map<String, String> genericsMap;
 	private String returnType;
 	private String memberName;
 	private List<String> paramTypeList;
-	private ClassBC classBytecode;
 
 	private static final Pattern PATTERN_ASSEMBLY_SIGNATURE = Pattern.compile("^(.*)\\s'(.*)'\\s'(\\(.*\\))(.*)'\\sin\\s'(.*)'");
 
@@ -84,15 +82,8 @@ public class MemberSignatureParts
 	private MemberSignatureParts()
 	{
 		modifierList = new ArrayList<>();
-		genericsMap = new LinkedHashMap<>(); // preserve order
 		paramTypeList = new ArrayList<>();
 		modifier = 0;
-	}
-
-	// TODO really???
-	public void setClassBC(ClassBC classBytecode)
-	{
-		this.classBytecode = classBytecode;
 	}
 
 	private static void completeSignature(String origSig, MemberSignatureParts msp)
@@ -240,7 +231,7 @@ public class MemberSignatureParts
 		return input.contains(" extends ") || input.contains(" super ");
 	}
 
-	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse)
+	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse, Map<String, String> classGenericsMap)
 	{
 		if (signatureHasGenerics(toParse))
 		{
@@ -288,6 +279,8 @@ public class MemberSignatureParts
 
 		int modifierCount = modifierMap.size();
 
+		Map<String, String> methodGenericsMap = null;
+
 		if (matcher.find())
 		{
 			int count = matcher.groupCount();
@@ -313,7 +306,7 @@ public class MemberSignatureParts
 				{
 					if (group != null)
 					{
-						msp.buildGenerics(group);
+						methodGenericsMap = msp.buildGenerics(group);
 					}
 				}
 
@@ -321,7 +314,7 @@ public class MemberSignatureParts
 				{
 					if (group != null)
 					{
-						msp.returnType = group;
+						msp.returnType = msp.replaceGenerics(group, classGenericsMap, methodGenericsMap);
 					}
 				}
 
@@ -337,7 +330,7 @@ public class MemberSignatureParts
 				{
 					if (group != null)
 					{
-						msp.buildParamTypes(group);
+						msp.buildParamTypes(group, classGenericsMap, methodGenericsMap);
 					}
 				}
 			}
@@ -407,8 +400,9 @@ public class MemberSignatureParts
 		msp.returnType = returnClassName;
 	}
 
-	private void buildGenerics(String genericsString)
+	private Map<String, String> buildGenerics(String genericsString)
 	{
+		Map<String, String> result = new LinkedHashMap<>();
 		String stripped = genericsString.substring(1, genericsString.length() - 1);
 		String[] substitutions = stripped.split(S_COMMA);
 
@@ -421,16 +415,17 @@ public class MemberSignatureParts
 				String[] pair = sub.split(" extends ");
 				String child = pair[0].trim();
 				String parent = pair[1].trim();
-				genericsMap.put(child, parent);
+				result.put(child, parent);
 			}
 			else
 			{
-				genericsMap.put(sub, null);
+				result.put(sub, null);
 			}
 		}
+		return result;
 	}
 
-	private void buildParamTypes(String paramString)
+	private void buildParamTypes(String paramString, Map<String, String> classGenericsMap, Map<String, String> methodGenericsMap)
 	{
 		int angleBracketDepth = 0;
 
@@ -449,7 +444,7 @@ public class MemberSignatureParts
 					if (angleBracketDepth == 0)
 					{
 						// finished param
-						addParam(paramBuilder);
+						addParam(paramBuilder, classGenericsMap, methodGenericsMap);
 					}
 					else
 					{
@@ -473,12 +468,12 @@ public class MemberSignatureParts
 			}
 
 			// last param
-			addParam(paramBuilder);
+			addParam(paramBuilder, classGenericsMap, methodGenericsMap);
 		}
 
 	}
 
-	private void addParam(StringBuilder paramBuilder)
+	private void addParam(StringBuilder paramBuilder, Map<String, String> classGenericsMap, Map<String, String> methodGenericsMap)
 	{
 		String param = paramBuilder.toString().trim();
 
@@ -514,8 +509,31 @@ public class MemberSignatureParts
 			}
 		}
 
+		param = replaceGenerics(param, classGenericsMap, methodGenericsMap);
+
 		paramTypeList.add(param);
 		paramBuilder.delete(0, paramBuilder.length());
+	}
+
+	private String replaceGenerics(String value, Map<String, String> classGenericsMap, Map<String, String> methodGenericsMap)
+	{
+		if (methodGenericsMap != null && methodGenericsMap.containsKey(value))
+		{
+			return methodGenericsMap.get(value);
+		}
+
+		if (classGenericsMap != null && classGenericsMap.containsKey(value))
+		{
+			return classGenericsMap.get(value);
+		}
+
+		int genericStart = value.indexOf(C_OPEN_ANGLE);
+
+		if (genericStart != -1)
+		{
+			return value.substring(0, genericStart);
+		}
+		return value;
 	}
 
 	public int getModifier()
@@ -528,45 +546,9 @@ public class MemberSignatureParts
 		return modifierList;
 	}
 
-	public Map<String, String> getGenerics()
-	{
-		return genericsMap;
-	}
-
 	public String getReturnType()
 	{
 		return returnType;
-	}
-
-	public String applyGenericSubstitutionsForClassLoading(final String typeName)
-	{
-		String result = typeName;
-
-		if (typeName != null)
-		{
-			int arrayBracketPos = typeName.indexOf(C_OPEN_SQUARE_BRACKET);
-
-			if (arrayBracketPos != -1)
-			{
-				result = typeName.substring(0, arrayBracketPos);
-			}
-
-			if (genericsMap.containsKey(result))
-			{
-				result = genericsMap.get(result);
-			}
-			else if (classBytecode != null && classBytecode.getGenericsMap().containsKey(result))
-			{
-				result = classBytecode.getGenericsMap().get(result);
-			}
-
-			if (arrayBracketPos != -1)
-			{
-				result = result + typeName.substring(arrayBracketPos);
-			}
-		}
-
-		return result;
 	}
 
 	public String getMemberName()
@@ -609,26 +591,6 @@ public class MemberSignatureParts
 		sb.append(C_NEWLINE);
 
 		sb.append("generics  : ");
-
-		if (genericsMap.size() > 0)
-		{
-			for (Map.Entry<String, String> entry : genericsMap.entrySet())
-			{
-				if (entry.getValue() != null)
-				{
-					sb.append(entry.getKey()).append("=>").append(entry.getValue());
-				}
-				else
-				{
-					sb.append(entry.getKey());
-				}
-
-				sb.append(C_COMMA);
-
-			}
-
-			sb.deleteCharAt(sb.length() - 1);
-		}
 
 		sb.append(C_NEWLINE);
 
@@ -680,7 +642,6 @@ public class MemberSignatureParts
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((fullyQualifiedClassName == null) ? 0 : fullyQualifiedClassName.hashCode());
-		result = prime * result + ((genericsMap == null) ? 0 : genericsMap.hashCode());
 		result = prime * result + ((memberName == null) ? 0 : memberName.hashCode());
 		result = prime * result + modifier;
 		result = prime * result + ((modifierList == null) ? 0 : modifierList.hashCode());
@@ -721,18 +682,6 @@ public class MemberSignatureParts
 			return false;
 		}
 
-		if (genericsMap == null)
-		{
-			if (other.genericsMap != null)
-			{
-				return false;
-			}
-		}
-		else if (!genericsMap.equals(other.genericsMap))
-		{
-			return false;
-		}
-
 		if (memberName == null)
 		{
 			if (other.memberName != null)
@@ -745,6 +694,7 @@ public class MemberSignatureParts
 			return false;
 		}
 
+		/*
 		if (modifier != other.modifier)
 		{
 			return false;
@@ -761,6 +711,7 @@ public class MemberSignatureParts
 		{
 			return false;
 		}
+		 */
 
 		if (paramTypeList == null)
 		{

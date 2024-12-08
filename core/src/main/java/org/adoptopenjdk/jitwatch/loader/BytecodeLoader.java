@@ -215,6 +215,26 @@ public final class BytecodeLoader
 
 		MemberBytecode memberBytecode = null;
 
+		boolean lookClassSignature = false;
+		while (pos < bytecodeLines.length)
+		{
+			String line = bytecodeLines[pos].trim();
+			pos ++;
+			if (line.equals("}"))
+			{
+				lookClassSignature = true;
+				continue;
+			}
+
+			if (lookClassSignature && line.startsWith(S_BYTECODE_SIGNATURE))
+			{
+				buildClassGenerics(line, classBytecode);
+				break;
+			}
+		}
+
+		pos = 0;
+
 		while (pos < bytecodeLines.length)
 		{
 			String line = bytecodeLines[pos].trim();
@@ -249,9 +269,7 @@ public final class BytecodeLoader
 			case NONE:
 				if (couldBeMemberSignature(line))
 				{
-					msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, line);
-
-					msp.setClassBC(classBytecode);
+					msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, line, classBytecode.getGenericsMap());
 
 					if (DEBUG_LOGGING_BYTECODE)
 					{
