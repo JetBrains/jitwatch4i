@@ -74,7 +74,17 @@ public class JavapProcess extends AbstractProcess
 
 			classPathBuilder.deleteCharAt(classPathBuilder.length() - 1);
 
-			args = new String[] { "-c", "-p", "-v", "-classpath", classPathBuilder.toString(), fqClassName };
+			String classPath = classPathBuilder.toString();
+
+			if (classPath.endsWith(".jar!"))
+			{
+				String jarPath = classPath + "/" + fqClassName.replace('.', '/') + ".class";
+				args = new String[]{"-c", "-p", "-v", jarPath};
+			}
+			else
+			{
+				args = new String[]{"-c", "-p", "-v", "-classpath", classPathBuilder.toString(), fqClassName};
+			}
 		}
 
 		List<String> commands = new ArrayList<>();
