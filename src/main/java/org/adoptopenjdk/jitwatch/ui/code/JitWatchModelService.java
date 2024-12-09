@@ -38,6 +38,7 @@ import static org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSuppor
 public class JitWatchModelService
 {
     private static final Logger LOG = Logger.getInstance(JitWatchModelService.class);
+    public static final String SOURCES_JAR_APPENDIX = "-sources.jar";
 
     private final Project project;
     private IReadOnlyJITDataModel model = null;
@@ -201,9 +202,25 @@ public class JitWatchModelService
             return;
         }
 
-        List<String> outputRoots = Arrays.stream(compilerExtension.getOutputRoots(true))
-                .map(VirtualFile::getCanonicalPath)
-                .toList();
+        VirtualFile virtualFile = file.getViewProvider().getVirtualFile();
+        List<String> classLocations = null;
+
+        if (virtualFile != null && virtualFile.getUrl().startsWith("jar:"))
+        {
+            String jarUrl = "jar:file:" + virtualFile.getUrl().substring(4, virtualFile.getUrl().lastIndexOf('!'));
+            if (jarUrl.endsWith(SOURCES_JAR_APPENDIX))
+            {
+                String jarLocation = jarUrl.substring(0, jarUrl.length() - SOURCES_JAR_APPENDIX.length()) + ".jar!";
+                classLocations = List.of(jarLocation);
+            }
+        }
+
+        if (classLocations == null)
+        {
+            classLocations = Arrays.stream(compilerExtension.getOutputRoots(true))
+                    .map(VirtualFile::getCanonicalPath)
+                    .toList();
+        }
 
         Path javapPath = findJavapPath(module);
         if (javapPath == null)
@@ -227,7 +244,7 @@ public class JitWatchModelService
                 continue;
             }
 
-            metaClass.getClassBytecode(model, outputRoots, javapPath);
+            metaClass.getClassBytecode(model, classLocations, javapPath);
             buildAllBytecodeAnnotations(metaClass, memberAnnotations);
             bytecodeAnnotations.put(metaClass, memberAnnotations);
         }

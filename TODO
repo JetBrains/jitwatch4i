@@ -1,10 +1,10 @@
-- IntelliJ logger backand
+x load bytecode from jar files
+- IntelliJ logger backend
 - task_done not found in <task decompiles="1"
 - fix compilation selection
 - Inner classes generics
 - Kotlin classes
-- Asm code highliting
-- load bytecode from jar files
+- Asm code highlighting
 - improve perf of tab Comp.Activity
 - improve perf of tab Timeline
 - improve perf of tab Histo
