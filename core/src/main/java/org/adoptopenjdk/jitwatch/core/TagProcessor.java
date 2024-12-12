@@ -142,6 +142,7 @@ public class TagProcessor
 			}
 			else if (S_FRAGMENT.equals(closeName))
 			{
+				topTag.setLast(true);
 				result = topTag;
 			}
 		}

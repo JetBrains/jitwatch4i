@@ -379,7 +379,10 @@ public abstract class AbstractLogParser implements ILogParser
 		}
 		else
 		{
-			logger.error("{} not found in {}", TAG_TASK_DONE, task);
+			if (!task.isLast())
+			{
+				logger.error("{} not found in {}", TAG_TASK_DONE, task);
+			}
 		}
 	}
 

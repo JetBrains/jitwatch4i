@@ -32,13 +32,24 @@ public class Tag
 	private String textContent = null;
 	
 	private static final String INDENT = "  ";
+    private boolean isLast;
 
-	public Tag(String name, String attributeString, boolean selfClosing)
+    public Tag(String name, String attributeString, boolean selfClosing)
 	{
 		this.name = name;
 		//this.closingTag = "" + C_OPEN_ANGLE + C_SLASH + name + C_CLOSE_ANGLE;
 		this.attributeString = attributeString;
 		this.selfClosing = selfClosing;
+	}
+
+	public boolean isLast()
+	{
+		return isLast;
+	}
+
+	public void setLast(boolean last)
+	{
+		isLast = last;
 	}
 
 	public void addTextContent(String text)
@@ -295,4 +306,5 @@ public class Tag
 	{
 		this.isFragment = isFragment;
 	}
+
 }
