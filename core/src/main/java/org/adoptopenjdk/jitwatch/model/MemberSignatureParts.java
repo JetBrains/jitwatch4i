@@ -7,6 +7,7 @@ package org.adoptopenjdk.jitwatch.model;
 
 import org.adoptopenjdk.jitwatch.logger.Logger;
 import org.adoptopenjdk.jitwatch.logger.LoggerFactory;
+import org.adoptopenjdk.jitwatch.model.bytecode.ClassBC;
 import org.adoptopenjdk.jitwatch.util.ParseUtil;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
@@ -203,7 +204,7 @@ public class MemberSignatureParts
 		return input.contains(" extends ") || input.contains(" super ");
 	}
 
-	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse, Map<String, String> classGenericsMap)
+	public static MemberSignatureParts fromBytecodeSignature(String fqClassName, String toParse, ClassBC classBC)
 	{
 		if (signatureHasGenerics(toParse))
 		{
@@ -286,7 +287,7 @@ public class MemberSignatureParts
 				{
 					if (group != null)
 					{
-						msp.returnType = msp.replaceGenerics(group, classGenericsMap, methodGenericsMap);
+						msp.returnType = msp.replaceGenerics(group, classBC, methodGenericsMap);
 					}
 				}
 
@@ -302,7 +303,7 @@ public class MemberSignatureParts
 				{
 					if (group != null)
 					{
-						msp.buildParamTypes(group, classGenericsMap, methodGenericsMap);
+						msp.buildParamTypes(group, classBC, methodGenericsMap);
 					}
 				}
 			}
@@ -397,7 +398,7 @@ public class MemberSignatureParts
 		return result;
 	}
 
-	private void buildParamTypes(String paramString, Map<String, String> classGenericsMap, Map<String, String> methodGenericsMap)
+	private void buildParamTypes(String paramString, ClassBC classBC, Map<String, String> methodGenericsMap)
 	{
 		int angleBracketDepth = 0;
 
@@ -416,7 +417,7 @@ public class MemberSignatureParts
 					if (angleBracketDepth == 0)
 					{
 						// finished param
-						addParam(paramBuilder, classGenericsMap, methodGenericsMap);
+						addParam(paramBuilder, classBC, methodGenericsMap);
 					}
 					else
 					{
@@ -440,12 +441,12 @@ public class MemberSignatureParts
 			}
 
 			// last param
-			addParam(paramBuilder, classGenericsMap, methodGenericsMap);
+			addParam(paramBuilder, classBC, methodGenericsMap);
 		}
 
 	}
 
-	private void addParam(StringBuilder paramBuilder, Map<String, String> classGenericsMap, Map<String, String> methodGenericsMap)
+	private void addParam(StringBuilder paramBuilder, ClassBC classBC, Map<String, String> methodGenericsMap)
 	{
 		String param = paramBuilder.toString().trim();
 
@@ -481,23 +482,33 @@ public class MemberSignatureParts
 			}
 		}
 
-		param = replaceGenerics(param, classGenericsMap, methodGenericsMap);
+		param = replaceGenerics(param, classBC, methodGenericsMap);
 
 		paramTypeList.add(param);
 		paramBuilder.delete(0, paramBuilder.length());
 	}
 
-	private String replaceGenerics(String value, Map<String, String> classGenericsMap, Map<String, String> methodGenericsMap)
+	private String replaceGenerics(String value, ClassBC classBC, Map<String, String> methodGenericsMap)
 	{
 		if (methodGenericsMap != null && methodGenericsMap.containsKey(value))
 		{
 			return methodGenericsMap.get(value);
 		}
 
-		if (classGenericsMap != null && classGenericsMap.containsKey(value))
+		ClassBC curClassBc = classBC;
+
+		do
 		{
-			return classGenericsMap.get(value);
-		}
+			Map<String, String> classGenericsMap = curClassBc.getGenericsMap();
+
+			if (classGenericsMap != null && classGenericsMap.containsKey(value))
+			{
+				return classGenericsMap.get(value);
+			}
+
+			curClassBc = curClassBc.getParent();
+
+		} while (curClassBc != null);
 
 		int genericStart = value.indexOf(C_OPEN_ANGLE);
 

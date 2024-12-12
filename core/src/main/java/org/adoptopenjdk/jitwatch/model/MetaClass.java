@@ -93,10 +93,15 @@ public class MetaClass implements Comparable<MetaClass>
 
 	public ClassBC getClassBytecode(IReadOnlyJITDataModel model, List<String> classLocations)
 	{
-		return getClassBytecode(model, classLocations, null);
+		return getClassBytecode(null, model, classLocations, null);
 	}
 
 	public ClassBC getClassBytecode(IReadOnlyJITDataModel model, List<String> classLocations, Path javapPath)
+	{
+		return getClassBytecode(null, model, classLocations, javapPath);
+	}
+
+	public ClassBC getClassBytecode(ClassBC parentClassBC, IReadOnlyJITDataModel model, List<String> classLocations, Path javapPath)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
@@ -105,11 +110,11 @@ public class MetaClass implements Comparable<MetaClass>
 
 		if (classBytecode == null)
 		{		
-			classBytecode = BytecodeLoader.fetchBytecodeForClass(classLocations, getFullyQualifiedName(), javapPath, true);
+			classBytecode = BytecodeLoader.fetchBytecodeForClass(parentClassBC, classLocations, getFullyQualifiedName(), javapPath, true);
 
 			if (classBytecode != null)
 			{
-				loadInnerClasses(classBytecode.getInnerClassNames(), model, classLocations, javapPath);
+				loadInnerClasses(classBytecode, classBytecode.getInnerClassNames(), model, classLocations, javapPath);
 			}
 		}
 
@@ -121,7 +126,7 @@ public class MetaClass implements Comparable<MetaClass>
 		return classBytecode;
 	}
 
-	private void loadInnerClasses(List<String> innerClassNames, IReadOnlyJITDataModel model, List<String> classLocations, Path javapPath)
+	private void loadInnerClasses(ClassBC parentClassBC, List<String> innerClassNames, IReadOnlyJITDataModel model, List<String> classLocations, Path javapPath)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
@@ -139,7 +144,7 @@ public class MetaClass implements Comparable<MetaClass>
 
 			if (metaClassForInner != null)
 			{
-				metaClassForInner.getClassBytecode(model, classLocations, javapPath);
+				metaClassForInner.getClassBytecode(parentClassBC, model, classLocations, javapPath);
 			}
 			else
 			{

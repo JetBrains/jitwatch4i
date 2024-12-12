@@ -24,6 +24,8 @@ import org.adoptopenjdk.jitwatch.logger.LoggerFactory;
 
 public class ClassBC
 {
+	private static final Logger logger = LoggerFactory.getLogger(ClassBC.class);
+
 	private ConstantPool constantPool;
 
 	private String sourceFile;
@@ -33,7 +35,8 @@ public class ClassBC
 	private int majorVersion;
 	private int minorVersion;
 
-	private String fqClassName;
+	private final ClassBC parent;
+	private final String fqClassName;
 
 	private List<MemberBytecode> memberBytecodeList = new ArrayList<>();
 
@@ -41,11 +44,15 @@ public class ClassBC
 
 	private Map<String, String> classGenericsMap = new LinkedHashMap<>();
 
-	private static final Logger logger = LoggerFactory.getLogger(ClassBC.class);
-
-	public ClassBC(String fqClassName)
+	public ClassBC(ClassBC parent, String fqClassName)
 	{
-		this.fqClassName = fqClassName;
+        this.parent = parent;
+        this.fqClassName = fqClassName;
+	}
+
+	public ClassBC getParent()
+	{
+		return parent;
 	}
 
 	public String getFullyQualifiedClassName()

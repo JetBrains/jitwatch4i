@@ -110,11 +110,10 @@ public final class BytecodeLoader
 
 	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName, boolean cacheBytecode)
 	{
-		return fetchBytecodeForClass(classLocations, fqClassName, null, cacheBytecode);
+		return fetchBytecodeForClass(null, classLocations, fqClassName, null, cacheBytecode);
 	}
 
-	public static ClassBC fetchBytecodeForClass(List<String> classLocations, String fqClassName, Path javapPath,
-			boolean cacheBytecode)
+	public static ClassBC fetchBytecodeForClass(ClassBC parentClassBC, List<String> classLocations, String fqClassName, Path javapPath, boolean cacheBytecode)
 	{
 		if (DEBUG_LOGGING_BYTECODE)
 		{
@@ -147,7 +146,7 @@ public final class BytecodeLoader
 				byteCodeString = getBytecodeStringViaProcess(classLocations, fqClassName, javapPath);
 			}
 
-			classBytecode = parseByteCodeFromString(fqClassName, byteCodeString, cacheBytecode);
+			classBytecode = parseByteCodeFromString(parentClassBC, fqClassName, byteCodeString, cacheBytecode);
 
 		}
 		catch (Exception e)
@@ -179,7 +178,7 @@ public final class BytecodeLoader
 		return javapProcess.getOutputStream();
 	}
 
-	private static ClassBC parseByteCodeFromString(String fqClassName, String byteCodeString, boolean cacheBytecode)
+	private static ClassBC parseByteCodeFromString(ClassBC parentClassBC, String fqClassName, String byteCodeString, boolean cacheBytecode)
 	{
 		ClassBC result = null;
 
@@ -189,7 +188,7 @@ public final class BytecodeLoader
 
 			try
 			{
-				result = parse(fqClassName, bytecodeLines, cacheBytecode);
+				result = parse(parentClassBC, fqClassName, bytecodeLines, cacheBytecode);
 			}
 			catch (Throwable t)
 			{
@@ -201,9 +200,9 @@ public final class BytecodeLoader
 	}
 
 	// TODO refactor this class - better stateful than all statics
-	public static ClassBC parse(String fqClassName, String[] bytecodeLines, boolean cacheBytecode)
+	public static ClassBC parse(ClassBC parentClassBC, String fqClassName, String[] bytecodeLines, boolean cacheBytecode)
 	{
-		ClassBC classBytecode = new ClassBC(fqClassName);
+		ClassBC classBytecode = new ClassBC(parentClassBC, fqClassName);
 
 		int pos = 0;
 
@@ -269,7 +268,7 @@ public final class BytecodeLoader
 			case NONE:
 				if (couldBeMemberSignature(line))
 				{
-					msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, line, classBytecode.getGenericsMap());
+					msp = MemberSignatureParts.fromBytecodeSignature(fqClassName, line, classBytecode);
 
 					if (DEBUG_LOGGING_BYTECODE)
 					{
