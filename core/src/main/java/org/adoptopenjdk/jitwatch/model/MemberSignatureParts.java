@@ -358,7 +358,7 @@ public class MemberSignatureParts
 
 		if (returnClassesNames.length == 1)
 		{
-			returnClassName = returnClassesNames[0];
+			returnClassName = ParseUtil.expandParameterType(returnClassesNames[0]);
 		}
 		else
 		{
@@ -367,7 +367,7 @@ public class MemberSignatureParts
 
 		for (String paramClassName : paramClassesName)
 		{
-			msp.paramTypeList.add(paramClassName);
+			msp.paramTypeList.add(ParseUtil.expandParameterType(paramClassName));
 		}
 
 		msp.returnType = returnClassName;
@@ -514,7 +514,15 @@ public class MemberSignatureParts
 
 		if (genericStart != -1)
 		{
-			return value.substring(0, genericStart);
+			int genericEnd = value.indexOf(C_CLOSE_ANGLE);
+			if (genericEnd != -1)
+			{
+				if (genericEnd < value.length() - 1)
+				{
+					return value.substring(0, genericStart) + value.substring(genericEnd + 1);
+				}
+				return value.substring(0, genericStart);
+			}
 		}
 		return value;
 	}

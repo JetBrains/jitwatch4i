@@ -2,7 +2,7 @@ x load bytecode from jar files
 x IntelliJ logger backend
 x fix compilation selection
 x task_done not found in <task decompiles="1"
-- Inner classes generics
+x Inner classes generics
 - Kotlin classes
 - Asm code highlighting
 - improve perf of tab Comp.Activity
