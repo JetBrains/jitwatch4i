@@ -13,7 +13,6 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
@@ -170,7 +169,6 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
         if (codeToolWindowManager == null)
         {
             codeToolWindowManager = JitWatchCodeUtil.registerToolWindows(project, this);
-            listenerCompilationChanged.add(codeToolWindowManager);
         }
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading compilation log", false)
@@ -184,6 +182,11 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
                     JitWatchModelService.getInstance(project).setParserResult(logParser);
                     SwingUtilities.invokeLater(() ->
                     {
+                        if (!listenerCompilationChanged.contains(codeToolWindowManager))
+                        {
+                            listenerCompilationChanged.add(codeToolWindowManager);
+                        }
+
                         openAllTabs();
                     });
                 }

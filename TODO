@@ -1,7 +1,7 @@
 x load bytecode from jar files
 x IntelliJ logger backend
+x fix compilation selection
 - task_done not found in <task decompiles="1"
-- fix compilation selection
 - Inner classes generics
 - Kotlin classes
 - Asm code highlighting
