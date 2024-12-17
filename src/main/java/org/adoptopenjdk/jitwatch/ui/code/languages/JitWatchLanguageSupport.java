@@ -17,11 +17,7 @@ public interface JitWatchLanguageSupport<ClassT extends PsiElement, MethodT exte
 
     List<MethodT> getAllMethods(ClassT cls);
 
-    boolean isMethod(PsiElement element);
-
     MethodT findMethodAtOffset(PsiFile file, int offset);
-
-    TextRange getNameRange(PsiElement element);
 
     String getClassVMName(ClassT cls);
 
@@ -29,7 +25,4 @@ public interface JitWatchLanguageSupport<ClassT extends PsiElement, MethodT exte
 
     boolean matchesSignature(MethodT method, String memberName, List<String> paramTypeNames, String returnTypeName);
 
-    PsiElement findCallToMember(PsiFile file, int offset, MemberSignatureParts calleeMember, int sameLineCallIndex);
-
-    PsiElement findAllocation(PsiFile file, int offset, String jvmName);
 }

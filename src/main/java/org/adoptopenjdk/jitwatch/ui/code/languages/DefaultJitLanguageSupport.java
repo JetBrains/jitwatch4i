@@ -1,10 +1,8 @@
 package org.adoptopenjdk.jitwatch.ui.code.languages;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 
 import java.util.Collections;
@@ -33,21 +31,9 @@ public class DefaultJitLanguageSupport implements JitWatchLanguageSupport<PsiEle
     }
 
     @Override
-    public boolean isMethod(PsiElement element)
-    {
-        return false;
-    }
-
-    @Override
     public PsiElement findMethodAtOffset(PsiFile file, int offset)
     {
         return null;
-    }
-
-    @Override
-    public TextRange getNameRange(PsiElement element)
-    {
-        return element.getTextRange();
     }
 
     @Override
@@ -66,17 +52,5 @@ public class DefaultJitLanguageSupport implements JitWatchLanguageSupport<PsiEle
     public boolean matchesSignature(PsiElement method, String memberName, List<String> paramTypeNames, String returnTypeName)
     {
         return false;
-    }
-
-    @Override
-    public PsiElement findCallToMember(PsiFile file, int offset, MemberSignatureParts calleeMember, int sameLineCallIndex)
-    {
-        return null;
-    }
-
-    @Override
-    public PsiElement findAllocation(PsiFile file, int offset, String jvmName)
-    {
-        return null;
     }
 }

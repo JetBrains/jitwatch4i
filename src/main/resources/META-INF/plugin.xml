@@ -11,6 +11,8 @@
     ]]></description>
 
   <depends>com.intellij.modules.java</depends>
+  <depends>org.jetbrains.kotlin</depends>
+
 
   <change-notes>
     <![CDATA[
@@ -35,6 +37,9 @@
     <languageSupport language="JAVA" implementationClass="org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchJavaSupport"/>
   </extensions>
 
+  <extensions defaultExtensionNs="org.adoptopenjdk.jitwatch.ui.code">
+    <languageSupport language="kotlin" implementationClass="org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchKotlinSupport"/>
+  </extensions>
 
   <actions>
   </actions>

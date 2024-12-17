@@ -1,18 +1,14 @@
 package org.adoptopenjdk.jitwatch.ui.code.languages;
 
 import com.intellij.debugger.engine.JVMNameUtil;
-import com.intellij.lang.ASTNode;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.search.ProjectScope;
-import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.TypeConversionUtil;
-import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.ui.code.JavaTypeUtils;
 
@@ -59,36 +55,9 @@ public class JitWatchJavaSupport implements JitWatchLanguageSupport<PsiClass, Ps
     }
 
     @Override
-    public boolean isMethod(PsiElement element)
-    {
-        return element instanceof PsiMethod;
-    }
-
-    @Override
     public PsiMethod findMethodAtOffset(PsiFile file, int offset)
     {
         return PsiTreeUtil.getParentOfType(file.findElementAt(offset), PsiMethod.class);
-    }
-
-    @Override
-    public TextRange getNameRange(PsiElement element)
-    {
-        if (element instanceof PsiNameIdentifierOwner)
-        {
-            PsiElement nameIdentifier = ((PsiNameIdentifierOwner) element).getNameIdentifier();
-            if (nameIdentifier != null)
-            {
-                return nameIdentifier.getTextRange();
-            }
-            else
-            {
-                return element.getTextRange();
-            }
-        }
-        else
-        {
-            return element.getTextRange();
-        }
     }
 
     @Override
@@ -173,88 +142,5 @@ public class JitWatchJavaSupport implements JitWatchLanguageSupport<PsiClass, Ps
             }
         }
         return erasedType.getCanonicalText();
-    }
-
-    @Override
-    public PsiElement findCallToMember(PsiFile file, int offset, MemberSignatureParts calleeMember, int sameLineCallIndex)
-    {
-        PsiStatement statement = findStatement(file, offset);
-        if (statement == null)
-        {
-            return null;
-        }
-        final PsiElement[] result = {null};
-        final int[] curIndex = {0};
-        statement.acceptChildren(new JavaRecursiveElementVisitor()
-        {
-            @Override
-            public void visitCallExpression(PsiCallExpression callExpression)
-            {
-                super.visitCallExpression(callExpression);
-                PsiMethod method = callExpression.resolveMethod();
-                if (method != null && matchesSignature(method, calleeMember))
-                {
-                    if (curIndex[0] == sameLineCallIndex)
-                    {
-                        if (callExpression instanceof PsiMethodCallExpression)
-                        {
-                            result[0] = ((PsiMethodCallExpression) callExpression).getMethodExpression();
-                        }
-                        else if (callExpression instanceof PsiNewExpression)
-                        {
-                            result[0] = ((PsiNewExpression) callExpression).getClassReference();
-                        }
-                        else
-                        {
-                            result[0] = callExpression;
-                        }
-                    }
-                    curIndex[0]++;
-                }
-            }
-        });
-        return result[0];
-    }
-
-    @Override
-    public PsiElement findAllocation(PsiFile file, int offset, String jvmName)
-    {
-        PsiClass expectedClass = ClassUtil.findPsiClassByJVMName(file.getManager(), jvmName);
-        if (expectedClass == null)
-        {
-            return null;
-        }
-        PsiStatement statement = findStatement(file, offset);
-        if (statement == null)
-        {
-            return null;
-        }
-        final PsiElement[] result = {null};
-        statement.acceptChildren(new JavaRecursiveElementVisitor()
-        {
-            @Override
-            public void visitNewExpression(PsiNewExpression expression)
-            {
-                super.visitNewExpression(expression);
-                PsiMethod constructor = expression.resolveConstructor();
-                PsiClass createdClass = constructor != null ? constructor.getContainingClass() : null;
-                if (createdClass != null && createdClass.isEquivalentTo(expectedClass))
-                {
-                    ASTNode newKeywordNode = expression.getNode().findChildByType(JavaTokenType.NEW_KEYWORD);
-                    result[0] = newKeywordNode != null ? newKeywordNode.getPsi() : expression;
-                }
-            }
-        });
-        return result[0];
-    }
-
-    private PsiStatement findStatement(PsiFile file, int offset)
-    {
-        return PsiTreeUtil.getParentOfType(file.findElementAt(offset), PsiStatement.class);
-    }
-
-    private boolean matchesSignature(PsiMethod method, MemberSignatureParts calleeMember)
-    {
-        return matchesSignature(method, calleeMember.getMemberName(), calleeMember.getParamTypes(), calleeMember.getReturnType());
     }
 }
