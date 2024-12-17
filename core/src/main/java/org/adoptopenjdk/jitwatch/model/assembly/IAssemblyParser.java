@@ -7,7 +7,7 @@ package org.adoptopenjdk.jitwatch.model.assembly;
 
 public interface IAssemblyParser
 {
-	AssemblyMethod parseAssembly(String assemblyString);
+	AssemblyMethod parseAssembly(String assemblyString, boolean isHexaCode);
 	
 	AssemblyInstruction createInstruction(AssemblyLabels labels, final String inLine);
 	

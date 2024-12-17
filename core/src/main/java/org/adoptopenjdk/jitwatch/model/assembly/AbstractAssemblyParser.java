@@ -19,9 +19,24 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SEMICOLON;
 import org.adoptopenjdk.jitwatch.logger.Logger;
 import org.adoptopenjdk.jitwatch.logger.LoggerFactory;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public abstract class AbstractAssemblyParser implements IAssemblyParser
 {
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractAssemblyParser.class);
+
+	private static final String PART_ADDRESS = "(" + S_HEX_PREFIX + "[a-f0-9]+):";
+	private static final String PART_INSTRUCTION = "([0-9a-fA-F]+(?:[\\s\\|]+[0-9a-fA-F]+)*)";
+	private static final String PART_COMMENT1 = "([;#].*)?";
+	private static final String PART_COMMENT2 = "([;#].*)";
+
+	private static final Pattern PATTERN_HEXA_CODE_INSTRUCTION = Pattern
+			.compile("^" + PART_ADDRESS + "\\s+" + PART_INSTRUCTION + PART_COMMENT1);
+
+	private static final Pattern PATTERN_COMMENT_INSTRUCTION = Pattern
+			.compile("^" + PART_ADDRESS + "\\s+" + PART_COMMENT2);
 
 	protected Architecture architecture;
 
@@ -38,7 +53,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 	// TODO this is too much work
 	// save the string blocks and parse on demand
 	@Override
-	public AssemblyMethod parseAssembly(final String assemblyString)
+	public AssemblyMethod parseAssembly(final String assemblyString, boolean isHexaCode)
 	{
 		final AssemblyLabels labels = new AssemblyLabels();
 
@@ -56,7 +71,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 
 		boolean seenInstructions = false;
 
-		for (int i = 0; i < lines.length; i++)
+		for (int i=0; i < lines.length; i++)
 		{
 			if (DEBUG_LOGGING_ASSEMBLY)
 			{
@@ -113,92 +128,129 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 			}
 			else
 			{
-				AssemblyInstruction instr = createInstruction(labels, line);
-
-				if (instr == null && lastLine != null && lastLine.trim().startsWith(S_HASH) && !line.startsWith(S_HEX_PREFIX)
-						&& !line.contains(' ' + S_HEX_PREFIX))
+				if (!isHexaCode)
 				{
+					AssemblyInstruction instr = createInstruction(labels, line);
 
-					if (headerBuilder.length() > 0)
+					if (instr == null && lastLine != null && lastLine.trim().startsWith(S_HASH) && !line.startsWith(S_HEX_PREFIX)
+							&& !line.contains(' ' + S_HEX_PREFIX))
 					{
-						// remove last newline
-						headerBuilder.setLength(headerBuilder.length() - S_NEWLINE.length());
+
+						if (headerBuilder.length() > 0)
+						{
+							// remove last newline
+							headerBuilder.setLength(headerBuilder.length() - S_NEWLINE.length());
+						}
+
+						headerBuilder.append(line).append(S_NEWLINE);
+
+						// update untrimmedLine since it is used to update
+						// lastUntrimmedLine at end of loop
+						line = lastLine + line;
 					}
+					else if (instr == null && lastLine != null && lastLine.trim().startsWith(S_SEMICOLON) && lastInstruction != null)
+					{
+						lastInstruction.appendToLastCommentLine(line);
 
-					headerBuilder.append(line).append(S_NEWLINE);
+						// update untrimmedLine since it is used to update
+						// lastUntrimmedLine at end of loop
+						line = lastLine + line;
+					}
+					else
+					{
+						boolean replaceLast = false;
 
-					// update untrimmedLine since it is used to update
-					// lastUntrimmedLine at end of loop
-					line = lastLine + line;
-				}
-				else if (instr == null && lastLine != null && lastLine.trim().startsWith(S_SEMICOLON) && lastInstruction != null)
-				{
-					lastInstruction.appendToLastCommentLine(line);
+						if (instr == null && i < lines.length - 1)
+						{
+							// try appending current and next lines together
+							String nextUntrimmedLine = lines[i + 1].replace(S_ENTITY_APOS, S_QUOTE);
 
-					// update untrimmedLine since it is used to update
-					// lastUntrimmedLine at end of loop
-					line = lastLine + line;
+							instr = createInstruction(labels, line + nextUntrimmedLine);
+
+							if (instr != null)
+							{
+								i++;
+							}
+						}
+
+						if (instr == null && lastInstruction != null)
+						{
+							// try appending last and current lines together
+							instr = createInstruction(labels, lastLine + line);
+							if (instr != null)
+							{
+								replaceLast = true;
+							}
+						}
+
+						if (instr != null)
+						{
+							seenInstructions = true;
+
+							if (replaceLast)
+							{
+								currentBlock.replaceLastInstruction(instr);
+							}
+							else
+							{
+								currentBlock.addInstruction(instr);
+
+								if (DEBUG_LOGGING_ASSEMBLY)
+								{
+									logger.debug("Added instruction {} pos {}", instr.toString(),
+											currentBlock.getInstructions().size() - 1);
+								}
+							}
+
+							if (currentBlock.getTitle() == null)
+							{
+								currentBlock.setTitle(NATIVE_CODE_ENTRY_POINT);
+							}
+
+							lastInstruction = instr;
+						}
+						else
+						{
+							if (seenInstructions && !line.trim().startsWith("ImmutableOopMap"))
+							{
+								logger.error("Could not parse assembly: {}", line);
+							}
+						}
+					}
 				}
 				else
 				{
-					boolean replaceLast = false;
-
-					if (instr == null && i < lines.length - 1)
-					{
-						// try appending current and next lines together
-						String nextUntrimmedLine = lines[i + 1].replace(S_ENTITY_APOS, S_QUOTE);
-
-						instr = createInstruction(labels, line + nextUntrimmedLine);
-
-						if (instr != null)
-						{
-							i++;
-						}
-					}
-
-					if (instr == null && lastInstruction != null)
-					{
-						// try appending last and current lines together
-						instr = createInstruction(labels, lastLine + line);
-						if (instr != null)
-						{
-							replaceLast = true;
-						}
-					}
+					AssemblyInstruction instr = createInstructionFromHexaCode(labels, line);
 
 					if (instr != null)
 					{
-						seenInstructions = true;
-
-						if (replaceLast)
+						if (lastInstruction != null && lastInstruction.getAddress() == instr.getAddress())
 						{
-							currentBlock.replaceLastInstruction(instr);
+							if (lastInstruction.getMnemonic().isEmpty())
+							{
+								lastInstruction.setMnemonic(instr.getMnemonic());
+							}
+							if (!instr.getCommentLines().isEmpty())
+							{
+								lastInstruction.getCommentLines().addAll(instr.getCommentLines());
+							}
 						}
 						else
 						{
 							currentBlock.addInstruction(instr);
-
 							if (DEBUG_LOGGING_ASSEMBLY)
 							{
 								logger.debug("Added instruction {} pos {}", instr.toString(),
 										currentBlock.getInstructions().size() - 1);
 							}
+							lastInstruction = instr;
 						}
-
-						if (currentBlock.getTitle() == null)
-						{
-							currentBlock.setTitle(NATIVE_CODE_ENTRY_POINT);
-						}
-
-						lastInstruction = instr;
 					}
 					else
 					{
-						if (seenInstructions && !line.trim().startsWith("ImmutableOopMap"))
-						{
-							logger.error("Could not parse assembly: {}", line);
-						}
+						lastInstruction = instr;
 					}
+
 				}
 			}
 			lastLine = line;
@@ -223,4 +275,46 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 	{
 		return (operand.startsWith(S_HEX_PREFIX) || operand.endsWith(S_HEX_POSTFIX)) && isJump(mnemonic);
 	}
+
+	protected AssemblyInstruction createInstructionFromHexaCode(AssemblyLabels labels, String inLine)
+	{
+		AssemblyInstruction result = null;
+
+		Matcher matcher = PATTERN_COMMENT_INSTRUCTION.matcher(inLine);
+		if (matcher.find())
+		{
+			String address = matcher.group(1);
+			String comment = matcher.group(2);
+
+			if (DEBUG_LOGGING_ASSEMBLY)
+			{
+				logger.debug("Address    : '{}'", address);
+				logger.debug("Comment    : '{}'", comment);
+			}
+			long addressValue = AssemblyUtil.getValueFromAddress(address);
+			result = new AssemblyInstruction("", addressValue, List.of(), "", List.of(), comment, labels);
+		}
+		else
+		{
+			matcher = PATTERN_HEXA_CODE_INSTRUCTION.matcher(inLine);
+			if (matcher.find())
+			{
+				String address = matcher.group(1);
+				String instructionString = matcher.group(2);
+				String comment = matcher.group(3);
+
+				if (DEBUG_LOGGING_ASSEMBLY)
+				{
+					logger.debug("Address    : '{}'", address);
+					logger.debug("Instruction: '{}'", instructionString);
+					logger.debug("Comment    : '{}'", comment);
+				}
+
+				long addressValue = AssemblyUtil.getValueFromAddress(address);
+				result = new AssemblyInstruction("", addressValue, List.of(), instructionString, List.of(), comment, labels);
+			}
+		}
+		return result;
+	}
+
 }

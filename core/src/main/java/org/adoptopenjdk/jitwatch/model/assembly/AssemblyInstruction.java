@@ -67,6 +67,11 @@ public class AssemblyInstruction
 		return mnemonic;
 	}
 
+	public void setMnemonic(String mnemonic)
+	{
+		this.mnemonic = mnemonic;
+	}
+
 	public List<String> getOperands()
 	{
 		return operands;

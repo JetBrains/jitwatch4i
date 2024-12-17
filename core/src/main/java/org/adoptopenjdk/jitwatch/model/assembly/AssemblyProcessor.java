@@ -47,6 +47,8 @@ public class AssemblyProcessor
 
 	private Architecture architecture = null;
 
+	private boolean isHexaCode = false;
+
 	public AssemblyProcessor()
 	{
 	}
@@ -79,6 +81,11 @@ public class AssemblyProcessor
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("handleLine:{}", line);
+		}
+
+		if (line.startsWith("----------------------------------- Assembly -----------------------------------"))
+		{
+			isHexaCode = true;
 		}
 
 		if (line.startsWith("[Disassembling for mach"))
@@ -235,7 +242,7 @@ public class AssemblyProcessor
 					logger.debug("Using assembly parser {}", parser.getClass().getName());
 				}
 
-				AssemblyMethod assemblyMethod = parser.parseAssembly(asmString);
+				AssemblyMethod assemblyMethod = parser.parseAssembly(asmString, isHexaCode);
 
 				assemblyMethod.setNativeAddress(nativeAddress);
 				assemblyMethod.setEntryAddress(entryAddress);
