@@ -130,19 +130,16 @@ public class ClassMemberListPanel extends JPanel
     {
         final JPopupMenu menu = new JPopupMenu();
 
-        JMenuItem menuItemTriView = new JMenuItem("Show TriView");
         JMenuItem menuItemInlinedInto = new JMenuItem("Show inlined into");
         JMenuItem menuItemIntrinsics = new JMenuItem("Show intrinsics used");
         JMenuItem menuItemCallChain = new JMenuItem("Show compile chain");
         JMenuItem menuItemOptimizedVCalls = new JMenuItem("Show optimized virtual calls");
 
-        menu.add(menuItemTriView);
         menu.add(menuItemInlinedInto);
         menu.add(menuItemIntrinsics);
         menu.add(menuItemCallChain);
         menu.add(menuItemOptimizedVCalls);
 
-        menuItemTriView.addActionListener(getEventHandlerMenuItemTriView(proxy));
         menuItemInlinedInto.addActionListener(getEventHandlerMenuItemInlinedInto(proxy));
         menuItemIntrinsics.addActionListener(getEventHandlerMenuItemIntrinsics(proxy));
         menuItemCallChain.addActionListener(getEventHandlerMenuItemCallChain(proxy));
@@ -154,28 +151,13 @@ public class ClassMemberListPanel extends JPanel
     {
         JPopupMenu menu = new JPopupMenu();
 
-        JMenuItem menuItemTriView = new JMenuItem("Show TriView");
         JMenuItem menuItemInlinedInto = new JMenuItem("Show inlined into");
 
-        menu.add(menuItemTriView);
         menu.add(menuItemInlinedInto);
 
-        menuItemTriView.addActionListener(getEventHandlerMenuItemTriView(proxy));
         menuItemInlinedInto.addActionListener(getEventHandlerMenuItemInlinedInto(proxy));
 
         return menu;
-    }
-
-    private ActionListener getEventHandlerMenuItemTriView(final IStageAccessProxy proxy)
-    {
-        return new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                // proxy.openTriView(memberList.getSelectedValue());
-            }
-        };
     }
 
     private ActionListener getEventHandlerMenuItemInlinedInto(final IStageAccessProxy proxy)
