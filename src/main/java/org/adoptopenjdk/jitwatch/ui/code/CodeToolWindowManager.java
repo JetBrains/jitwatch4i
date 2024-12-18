@@ -188,6 +188,12 @@ public class CodeToolWindowManager implements ICompilationChangeListener
                     String paramTypeA = member.getParamTypeNames()[i];
                     PsiType psiParamTypeB = method.getParameterList().getParameter(i).getType();
                     String paramTypeB = psiClassType.resolveGenerics().getSubstitutor().substitute(psiParamTypeB).getCanonicalText();
+                    int genIndex = paramTypeB.indexOf('<');
+                    if (genIndex > 0)
+                    {
+                        // metamodel has no generics
+                        paramTypeB = paramTypeB.substring(0, genIndex);
+                    }
                     if (!paramTypeA.equals(paramTypeB))
                     {
                         if (paramTypeA.contains("$"))

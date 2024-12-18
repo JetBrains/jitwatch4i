@@ -7,11 +7,16 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
+import org.jetbrains.kotlin.caches.resolve.KotlinCacheService;
+import org.jetbrains.kotlin.descriptors.CallableDescriptor;
+import org.jetbrains.kotlin.descriptors.ClassifierDescriptor;
+import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor;
 import org.jetbrains.kotlin.idea.stubindex.KotlinFullClassNameIndex;
-import org.jetbrains.kotlin.psi.KtCallableDeclaration;
-import org.jetbrains.kotlin.psi.KtClassOrObject;
-import org.jetbrains.kotlin.psi.KtNamedFunction;
-import org.jetbrains.kotlin.psi.KtTypeReference;
+import org.jetbrains.kotlin.psi.*;
+import org.jetbrains.kotlin.resolve.BindingContext;
+import org.jetbrains.kotlin.resolve.DescriptorUtils;
+import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode;
+import org.jetbrains.kotlin.types.KotlinType;
 
 
 import java.util.ArrayList;
@@ -76,40 +81,93 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
     @Override
     public boolean matchesSignature(KtCallableDeclaration method, String memberName, List<String> paramTypeNames, String returnTypeName)
     {
-        String name = method.getName();
+        BindingContext bindingContext = KotlinCacheService.Companion.getInstance(method.getProject())
+                .getResolutionFacade(method.getContainingKtFile())
+                .analyze(method, BodyResolveMode.PARTIAL);
+
+        if (bindingContext == null)
+        {
+            return false;
+        }
+
+        CallableDescriptor callableDescriptor = (CallableDescriptor)
+                bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, method);
+
+        String name = callableDescriptor.getName().asString();
+
         if (!memberName.equals(name))
         {
             return false;
         }
 
-        if (paramTypeNames.size() != method.getValueParameters().size())
+        if (callableDescriptor == null)
         {
             return false;
         }
 
-        List<String> methodParamTypes = method.getValueParameters().stream()
-                .map(param -> jvmText(param.getTypeReference()))
-                .toList();
+        List<ValueParameterDescriptor> valueParameters = callableDescriptor.getValueParameters();
+        if (paramTypeNames.size() != valueParameters.size())
+        {
+            return false;
+        }
 
         for (int i = 0; i < paramTypeNames.size(); i++)
         {
-            if (!paramTypeNames.get(i).equals(methodParamTypes.get(i)))
+            KotlinType paramType = valueParameters.get(i).getType();
+            String normalizedParamFqName = normalizeTypeName(paramType);
+            if (normalizedParamFqName == null)
+            {
+                return false;
+            }
+            if (!paramTypeNames.get(i).equals(normalizedParamFqName))
             {
                 return false;
             }
         }
 
-        String methodReturnType = jvmText(method.getTypeReference());
-        return returnTypeName.equals(methodReturnType);
+        String normalizedReturnFqName = normalizeTypeName(callableDescriptor.getReturnType());
+
+        return returnTypeName.equals(normalizedReturnFqName);
     }
 
-    private String jvmText(KtTypeReference typeReference)
+    private String normalizeTypeName(KotlinType kotlinType)
     {
-        if (typeReference == null)
+        if (kotlinType == null)
         {
             return Void.class.getName();
         }
-        return typeReference.getText();
-    }
 
+        ClassifierDescriptor classifierDescriptor = kotlinType.getConstructor().getDeclarationDescriptor();
+        if (classifierDescriptor == null)
+        {
+            return null;
+        }
+
+        String fqName = DescriptorUtils.getFqName(classifierDescriptor).toSafe().asString();
+        boolean isNullable = kotlinType.isMarkedNullable();
+
+        switch (fqName)
+        {
+            case "kotlin.String":
+                return "java.lang.String";
+            case "kotlin.Boolean":
+                return isNullable ? "java.lang.Boolean" : "boolean";
+            case "kotlin.Char":
+                return isNullable ? "java.lang.Character" : "char";
+            case "kotlin.Byte":
+                return isNullable ? "java.lang.Byte" : "byte";
+            case "kotlin.Short":
+                return isNullable ? "java.lang.Short" : "short";
+            case "kotlin.Int":
+                return isNullable ? "java.lang.Integer" : "int";
+            case "kotlin.Long":
+                return isNullable ? "java.lang.Long" : "long";
+            case "kotlin.Float":
+                return isNullable ? "java.lang.Float" : "float";
+            case "kotlin.Double":
+                return isNullable ? "java.lang.Double" : "double";
+            default:
+                return fqName;
+        }
+    }
 }
