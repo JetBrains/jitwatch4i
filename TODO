@@ -5,8 +5,8 @@ x task_done not found in <task decompiles="1"
 x Inner classes generics
 x popup menu on compilation list
 x tab Comp.Chain to tree component
-- Kotlin classes
-- Asm code highlighting
+x assembly syntax highlighting
+x Kotlin classes
 - improve perf of tab Comp.Activity
 - improve perf of tab Timeline
 - improve perf of tab Histo
