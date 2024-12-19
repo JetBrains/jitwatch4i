@@ -1,5 +1,7 @@
 # JITWatch4i
 
+![Screenshot_20241219_222045](https://github.com/user-attachments/assets/3a20e4ee-3f01-4243-9370-455d5b6fe9c9)
+
 **JITWatch4i** is an IntelliJ IDEA plugin for analyzing and visualizing logs from the HotSpot JIT (Just-In-Time) compiler. It is built upon the foundations of [JitWatch](https://github.com/AdoptOpenJDK/jitwatch) by Chris Newland and [jitwatch-intellij](https://github.com/yole/jitwatch-intellij) by Dmitry Jemerov.
 
 ## Features
