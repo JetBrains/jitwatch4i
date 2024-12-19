@@ -13,3 +13,4 @@ plugins {
 
 rootProject.name = "jitwatch4i"
 include("core")
+include("nasm")

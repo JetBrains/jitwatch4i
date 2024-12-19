@@ -20,6 +20,7 @@ intellij {
 
 dependencies {
     implementation(project("core"))
+    implementation(project("nasm"))
 }
 
 tasks {

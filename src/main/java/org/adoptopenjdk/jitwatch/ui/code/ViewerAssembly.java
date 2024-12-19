@@ -3,7 +3,12 @@ package org.adoptopenjdk.jitwatch.ui.code;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.LogicalPosition;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.editor.ex.util.LexerEditorHighlighter;
+import com.intellij.openapi.editor.highlighter.EditorHighlighter;
 import com.intellij.openapi.project.Project;
+import com.nasmlanguage.NASMSyntaxHighlighter;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public class ViewerAssembly extends CodePanelBase
@@ -11,11 +16,17 @@ public class ViewerAssembly extends CodePanelBase
     private static final Logger logger = Logger.getInstance(ViewerAssembly.class);
 
     private final AssemblyTextBuilder assemblyTextBuilder;
+    private final EditorHighlighter editorHighlighter;
 
     public ViewerAssembly(Project project)
     {
         super(project);
         this.assemblyTextBuilder = new AssemblyTextBuilder();
+        editorHighlighter = new LexerEditorHighlighter(
+                new NASMSyntaxHighlighter(),
+                EditorColorsManager.getInstance().getGlobalScheme()
+        );
+        ((EditorEx) getViewerEditor()).setHighlighter(editorHighlighter);
     }
 
     public IMetaMember getCurrentMember()

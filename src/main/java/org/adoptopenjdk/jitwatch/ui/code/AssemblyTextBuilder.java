@@ -1,18 +1,18 @@
 package org.adoptopenjdk.jitwatch.ui.code;
 
+//import capstone.Capstone;
+//import capstone.api.Instruction;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
-import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyInstruction;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyMethod;
-import org.adoptopenjdk.jitwatch.model.bytecode.BytecodeInstruction;
 import org.adoptopenjdk.jitwatch.util.StringUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
@@ -108,7 +108,10 @@ public class AssemblyTextBuilder
 
                         if (commentLines.size() == 0)
                         {
-                            AssemblyLine assemblyLine = new AssemblyLine(instr.toString(annoWidth, 0, true), instr);
+                            String line = instr.toString(annoWidth, 0, true);
+                            String disLine = line;
+//                            String disLine = disassembly(line);
+                            AssemblyLine assemblyLine = new AssemblyLine(disLine, instr);
                             lines.add(assemblyLine);
                         }
                         else
@@ -133,6 +136,64 @@ public class AssemblyTextBuilder
         }
     }
 
+    private String stripAddress(String line)
+    {
+        Pattern linePattern = Pattern.compile("^0x([0-9a-fA-F]+):");
+        Matcher m = linePattern.matcher(line);
+        if (m.find())
+        {
+            return m.replaceFirst("  ");
+        }
+        return line;
+    }
+
+    //    private String disassembly(String line)
+//    {
+//        Pattern linePattern = Pattern.compile("^0x([0-9a-fA-F]+):\\s+([0-9a-fA-F\\s]+)$");
+//
+//        String result = line;
+//        Matcher m = linePattern.matcher(line);
+//        if (m.find())
+//        {
+//            String addressStr = m.group(1);
+//            String codeStr = m.group(2);
+//
+//            long address = Long.parseUnsignedLong(addressStr, 16);
+//
+//            String[] byteGroups = codeStr.trim().split("\\s+");
+//            List<Byte> byteList = new ArrayList<>();
+//
+//            for (String group : byteGroups)
+//            {
+//                String hex = group.toLowerCase().replaceAll("[^0-9a-f]", "");
+//                for (int i = 0; i < hex.length(); i+=2)
+//                {
+//                    String byteHex = hex.substring(i, Math.min(i+2, hex.length()));
+//                    byteList.add((byte) Integer.parseInt(byteHex, 16));
+//                }
+//            }
+//
+//            byte[] codeBytes = new byte[byteList.size()];
+//            for (int i = 0; i < byteList.size(); i++)
+//            {
+//                codeBytes[i] = byteList.get(i);
+//            }
+//
+//            try (Capstone cs = new Capstone(Capstone.CS_ARCH_X86, Capstone.CS_MODE_64))
+//            {
+//                Instruction[] insns = cs.disasm(codeBytes, address);
+//                if (insns != null && insns.length > 0)
+//                {
+//                    for (Instruction insn : insns)
+//                    {
+//                        result = String.format("0x%x:\t%s\t%s\n", insn.getAddress(), insn.getMnemonic(), insn.getOpStr());
+//                    }
+//                }
+//            }
+//        }
+//        return result;
+//    }
+//
     public String getText()
     {
         List<String> lineTextList = lines.stream().map(line -> line.line).collect(Collectors.toUnmodifiableList());
