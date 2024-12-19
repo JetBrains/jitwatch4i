@@ -8,8 +8,13 @@ package org.adoptopenjdk.jitwatch.ui.main;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.ui.treeStructure.Tree;
+import com.intellij.ui.treeStructure.treetable.ListTreeTableModel;
+import com.intellij.ui.treeStructure.treetable.TreeColumnInfo;
+import com.intellij.ui.treeStructure.treetable.TreeTable;
+import com.intellij.util.ui.ColumnInfo;
 import org.adoptopenjdk.jitwatch.core.JITWatchConfig;
+import org.adoptopenjdk.jitwatch.model.Compilation;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.model.MetaPackage;
 
@@ -26,9 +31,9 @@ import java.util.Set;
 
 public class ClassTreePanel extends JPanel
 {
-    private Tree treeView;
+    private TreeTable treeTable;
     private DefaultMutableTreeNode rootItem;
-    private DefaultTreeModel treeModel;
+    private ListTreeTableModel treeTableModel;
 
     private JITWatchUI parent;
     private JITWatchConfig config;
@@ -48,20 +53,46 @@ public class ClassTreePanel extends JPanel
 
         setLayout(new BorderLayout());
 
-        rootItem = new DefaultMutableTreeNode(TREE_PACKAGE_ROOT);
-        treeModel = new DefaultTreeModel(rootItem);
-        treeView = new Tree(treeModel);
-        treeView.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        rootItem = new DefaultMutableTreeNode("Root");
 
-        treeView.addTreeSelectionListener(new TreeSelectionListener()
+        ColumnInfo<DefaultMutableTreeNode, Long> compilationTimeColumnInfo = new ColumnInfo<DefaultMutableTreeNode, Long>("Compilation Time (ms)")
+        {
+            @Override
+            public Long valueOf(DefaultMutableTreeNode node)
+            {
+                return calculateCompilationTime(node);
+            }
+
+            @Override
+            public Class<?> getColumnClass()
+            {
+                return Long.class;
+            }
+        };
+
+        ColumnInfo[] columns = new ColumnInfo[] { new TreeColumnInfo("Class Name"), compilationTimeColumnInfo };
+
+        treeTableModel = new ListTreeTableModel(rootItem, columns);
+        treeTable = new TreeTable(treeTableModel);
+
+        JTree tree = treeTable.getTree();
+        tree.setRootVisible(true);
+        tree.setShowsRootHandles(true);
+        tree.setCellRenderer(new CustomTreeCellRenderer());
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
+        tree.addTreeSelectionListener(new TreeSelectionListener()
         {
             @Override
             public void valueChanged(TreeSelectionEvent e)
             {
                 if (!selectedProgrammatically)
                 {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) treeView.getLastSelectedPathComponent();
-                    if (node == null) return;
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+                    if (node == null)
+                    {
+                        return;
+                    }
                     Object value = node.getUserObject();
                     if (value instanceof MetaClass)
                     {
@@ -71,10 +102,10 @@ public class ClassTreePanel extends JPanel
             }
         });
 
-        treeView.addTreeWillExpandListener(new TreeWillExpandListener()
+        tree.addTreeWillExpandListener(new TreeWillExpandListener()
         {
             @Override
-            public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException
+            public void treeWillExpand(TreeExpansionEvent event)
             {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) event.getPath().getLastPathComponent();
                 Object value = node.getUserObject();
@@ -85,7 +116,7 @@ public class ClassTreePanel extends JPanel
             }
 
             @Override
-            public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException
+            public void treeWillCollapse(TreeExpansionEvent event)
             {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) event.getPath().getLastPathComponent();
                 Object value = node.getUserObject();
@@ -96,10 +127,8 @@ public class ClassTreePanel extends JPanel
             }
         });
 
-        treeView.setCellRenderer(new CustomTreeCellRenderer());
-
-        JBScrollPane treeScrollPane = new JBScrollPane(treeView);
-        add(treeScrollPane, BorderLayout.CENTER);
+        JBScrollPane scrollPane = new JBScrollPane(treeTable);
+        add(scrollPane, BorderLayout.CENTER);
     }
 
     private DefaultMutableTreeNode findOrCreateTreeNode(final DefaultMutableTreeNode parent, final Object value)
@@ -142,17 +171,6 @@ public class ClassTreePanel extends JPanel
 
         if (found == null)
         {
-            boolean hasCompiledChildren = false;
-
-            if (value instanceof MetaPackage && ((MetaPackage) value).hasCompiledClasses())
-            {
-                hasCompiledChildren = true;
-            }
-            else if (value instanceof MetaClass && ((MetaClass) value).hasCompiledMethods())
-            {
-                hasCompiledChildren = true;
-            }
-
             found = new DefaultMutableTreeNode(value);
             parent.insert(found, placeToInsert);
 
@@ -162,7 +180,7 @@ public class ClassTreePanel extends JPanel
                 if (sameVmCommand && openPackageNodes.contains(packageName))
                 {
                     TreePath path = new TreePath(found.getPath());
-                    treeView.expandPath(path);
+                    treeTable.getTree().expandPath(path);
                 }
             }
         }
@@ -196,19 +214,16 @@ public class ClassTreePanel extends JPanel
             }
         }
 
-        treeModel.reload();
+        treeTable.getTree().expandRow(0);
     }
 
     private void showTree(DefaultMutableTreeNode currentNode, MetaPackage mp)
     {
         DefaultMutableTreeNode packageNode = findOrCreateTreeNode(currentNode, mp);
 
-        List<MetaPackage> childPackages = mp.getChildPackages();
-
-        for (MetaPackage childPackage : childPackages)
+        for (MetaPackage childPackage : mp.getChildPackages())
         {
             boolean allowed = true;
-
             if (!childPackage.hasCompiledClasses() && config.isShowOnlyCompiledClasses())
             {
                 allowed = false;
@@ -220,9 +235,7 @@ public class ClassTreePanel extends JPanel
             }
         }
 
-        List<MetaClass> packageClasses = mp.getPackageClasses();
-
-        for (MetaClass packageClass : packageClasses)
+        for (MetaClass packageClass : mp.getPackageClasses())
         {
             boolean allowed = true;
 
@@ -242,13 +255,13 @@ public class ClassTreePanel extends JPanel
     {
         selectedProgrammatically = true;
         TreePath path = new TreePath(node.getPath());
-        treeView.setSelectionPath(path);
+        treeTable.getTree().setSelectionPath(path);
         selectedProgrammatically = false;
     }
 
     public void scrollTo(int rowsAbove)
     {
-        treeView.scrollRowToVisible(rowsAbove);
+        treeTable.getTree().scrollRowToVisible(rowsAbove);
     }
 
     public DefaultMutableTreeNode getRootItem()
@@ -259,13 +272,41 @@ public class ClassTreePanel extends JPanel
     public void clear()
     {
         rootItem.removeAllChildren();
-        treeModel.reload();
+        treeTableModel.reload();
     }
 
     public void scrollPathToVisible(DefaultMutableTreeNode node)
     {
         TreePath path = new TreePath(node.getPath());
-        treeView.scrollPathToVisible(path);
+        treeTable.getTree().scrollPathToVisible(path);
+    }
+
+    private long calculateCompilationTime(DefaultMutableTreeNode node)
+    {
+        long total = 0;
+        Object userObject = node.getUserObject();
+
+        if (userObject instanceof MetaClass)
+        {
+            MetaClass metaClass = (MetaClass) userObject;
+            for (IMetaMember method: metaClass.getMetaMembers())
+            {
+                for (Compilation compilation : method.getCompilations())
+                {
+                   total += compilation.getCompilationDuration();
+                }
+            }
+        }
+        else if (userObject instanceof MetaPackage)
+        {
+            for (int i = 0; i < node.getChildCount(); i++)
+            {
+                DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
+                total += calculateCompilationTime(child);
+            }
+        }
+
+        return total;
     }
 
     private class CustomTreeCellRenderer extends DefaultTreeCellRenderer
@@ -276,35 +317,36 @@ public class ClassTreePanel extends JPanel
         {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-            Object userObject = node.getUserObject();
+            if (value instanceof DefaultMutableTreeNode)
+            {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+                Object userObject = node.getUserObject();
 
-            if (userObject instanceof MetaPackage)
-            {
-                if (((MetaPackage) userObject).hasCompiledClasses())
+                if (userObject instanceof MetaPackage)
                 {
-                    setIcon(AllIcons.Nodes.Package);
+                    if (((MetaPackage) userObject).hasCompiledClasses())
+                    {
+                        setIcon(AllIcons.Nodes.Package);
+                    }
+                    else
+                    {
+                        setIcon(disabledPackageIcon);
+                    }
                 }
-                else
+                else if (userObject instanceof MetaClass)
                 {
-                    setIcon(disabledPackageIcon);
-                }
-            }
-            else if (userObject instanceof MetaClass)
-            {
-                if (((MetaClass) userObject).hasCompiledMethods())
-                {
-                    setIcon(AllIcons.Nodes.Class);
-                }
-                else
-                {
-                    setIcon(disabledClassIcon);
+                    if (((MetaClass) userObject).hasCompiledMethods())
+                    {
+                        setIcon(AllIcons.Nodes.Class);
+                    }
+                    else
+                    {
+                        setIcon(disabledClassIcon);
+                    }
                 }
             }
 
             return this;
         }
     }
-
-    private static final String TREE_PACKAGE_ROOT = "Root";
 }

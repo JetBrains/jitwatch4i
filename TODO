@@ -3,12 +3,12 @@ x IntelliJ logger backend
 x fix compilation selection
 x task_done not found in <task decompiles="1"
 x Inner classes generics
-- popup menu on compilation list
+x popup menu on compilation list
+x tab Comp.Chain to tree component
 - Kotlin classes
 - Asm code highlighting
 - improve perf of tab Comp.Activity
 - improve perf of tab Timeline
 - improve perf of tab Histo
-- tab Comp.Chain to tree component
 - Main with tree table & aggregated times per node
 - search in main tab (filter)
