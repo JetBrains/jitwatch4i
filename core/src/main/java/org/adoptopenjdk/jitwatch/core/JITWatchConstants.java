@@ -60,6 +60,7 @@ public final class JITWatchConstants
 
 	public static final String NATIVE_CODE_START = "Decoding compiled method";
 	public static final String NATIVE_CODE_ENTRY_POINT = "[Entry Point]";
+	public static final String DISASSEMBLY_ENTRY_POINT = "[Disassembly]";
 	public static final String NATIVE_CODE_METHOD_MARK = "# {method}";
 	public static final String LOADED = "[Loaded ";
 	public static final String METHOD = "method";
