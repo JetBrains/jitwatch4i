@@ -53,7 +53,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 	// TODO this is too much work
 	// save the string blocks and parse on demand
 	@Override
-	public AssemblyMethod parseAssembly(final String assemblyString, boolean isHexaCode)
+	public AssemblyMethod parseAssembly(final String assemblyString, boolean isDisassembly)
 	{
 		final AssemblyLabels labels = new AssemblyLabels();
 
@@ -128,7 +128,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 			}
 			else
 			{
-				if (!isHexaCode)
+				if (isDisassembly)
 				{
 					AssemblyInstruction instr = createInstruction(labels, line);
 

@@ -9,6 +9,7 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DEBUG_LOGGING_ASSEMBLY;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_METHOD_MARK;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.NATIVE_CODE_START;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.DISASSEMBLY_ENTRY_POINT;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_APOSTROPHE;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_COLON;
 import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_HASH;
@@ -47,7 +48,7 @@ public class AssemblyProcessor
 
 	private Architecture architecture = null;
 
-	private boolean isHexaCode = false;
+	private boolean isDisassembly = false;
 
 	public AssemblyProcessor()
 	{
@@ -81,11 +82,6 @@ public class AssemblyProcessor
 		if (DEBUG_LOGGING_ASSEMBLY)
 		{
 			logger.debug("handleLine:{}", line);
-		}
-
-		if (line.startsWith("----------------------------------- Assembly -----------------------------------"))
-		{
-			isHexaCode = true;
 		}
 
 		if (line.startsWith("[Disassembling for mach"))
@@ -164,6 +160,10 @@ public class AssemblyProcessor
 		}
 		else if (assemblyStarted)
 		{
+			if (DISASSEMBLY_ENTRY_POINT.equals(line))
+			{
+				isDisassembly = true;
+			}
 			boolean couldBeNativeMethodMark = false;
 
 			couldBeNativeMethodMark = line.startsWith(NATIVE_CODE_METHOD_MARK);
@@ -242,7 +242,7 @@ public class AssemblyProcessor
 					logger.debug("Using assembly parser {}", parser.getClass().getName());
 				}
 
-				AssemblyMethod assemblyMethod = parser.parseAssembly(asmString, isHexaCode);
+				AssemblyMethod assemblyMethod = parser.parseAssembly(asmString, isDisassembly);
 
 				assemblyMethod.setNativeAddress(nativeAddress);
 				assemblyMethod.setEntryAddress(entryAddress);
@@ -262,6 +262,7 @@ public class AssemblyProcessor
 
 		methodStarted = false;
 		methodInterrupted = false;
+		isDisassembly = false;
 	}
 
 	public void attachAssemblyToMembers(PackageManager packageManager)
