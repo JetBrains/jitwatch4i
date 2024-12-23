@@ -21,6 +21,10 @@ intellij {
 dependencies {
     implementation(project("core"))
     implementation(project("nasm"))
+    implementation("com.github.zhkl0228:capstone:3.1.8") {
+        exclude(group = "net.java.dev.jna", module = "jna")
+        exclude(group = "org.scijava", module = "native-lib-loader")
+    }
 }
 
 tasks {
@@ -46,6 +50,6 @@ tasks {
     }
 
     runIde {
-        jvmArgs("-Xmx14G", "-Xms2G", "-XX:+AllowEnhancedClassRedefinition")
+        jvmArgs("-Xmx14G", "-Xms2G", "-XX:+AllowEnhancedClassRedefinition", "-Djna.debug_load=true", "-Djna.debug_load.jna=true")
     }
 }

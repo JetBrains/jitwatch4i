@@ -1,7 +1,8 @@
 package org.adoptopenjdk.jitwatch.ui.code;
 
-//import capstone.Capstone;
-//import capstone.api.Instruction;
+import capstone.Capstone;
+import capstone.api.Instruction;
+import com.intellij.openapi.diagnostic.Logger;
 import org.adoptopenjdk.jitwatch.model.Compilation;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.assembly.AssemblyBlock;
@@ -19,6 +20,8 @@ import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.*;
 
 public class AssemblyTextBuilder
 {
+    private static final Logger logger = Logger.getInstance(AssemblyTextBuilder.class);
+
     public static class AssemblyLine
     {
         public final String line;
@@ -109,8 +112,8 @@ public class AssemblyTextBuilder
                         if (commentLines.size() == 0)
                         {
                             String line = instr.toString(annoWidth, 0, true);
-                            String disLine = line;
-//                            String disLine = disassembly(line);
+                            //String disLine = line;
+                            String disLine = disassembly(line);
                             AssemblyLine assemblyLine = new AssemblyLine(disLine, instr);
                             lines.add(assemblyLine);
                         }
@@ -118,7 +121,7 @@ public class AssemblyTextBuilder
                         {
                             for (int i = 0; i < commentLines.size(); i++)
                             {
-                                AssemblyLine assemblyLine = new AssemblyLine(instr.toString(annoWidth, i, true), instr);
+                                AssemblyLine assemblyLine = new AssemblyLine(disassembly(instr.toString(annoWidth, i, true)), instr);
                                 lines.add(assemblyLine);
                             }
                         }
@@ -135,65 +138,68 @@ public class AssemblyTextBuilder
             lines.add(new AssemblyLine("No compilation selected for this member.", null));
         }
     }
+    private static final String PART_ADDRESS = "(0x[a-f0-9]+):";
+    private static final String PART_INSTRUCTION = "([0-9a-fA-F]+(?:[\\s\\|]+[0-9a-fA-F]+)*)";
+    private static final String PART_COMMENT1 = "([;#].*)?";
+    private static final String PART_COMMENT2 = "([;#].*)";
 
-    private String stripAddress(String line)
+    private static final Pattern PATTERN_HEXA_CODE_INSTRUCTION = Pattern
+            .compile("^" + PART_ADDRESS + "\\s+" + PART_INSTRUCTION + PART_COMMENT1);
+
+    private String disassembly(String line)
     {
-        Pattern linePattern = Pattern.compile("^0x([0-9a-fA-F]+):");
-        Matcher m = linePattern.matcher(line);
+        String result = line;
+        Matcher m = PATTERN_HEXA_CODE_INSTRUCTION.matcher(line);
         if (m.find())
         {
-            return m.replaceFirst("  ");
+            long address = Long.parseUnsignedLong(m.group(1).substring(2), 16);
+            String codeStr = m.group(2);
+            String comment = m.group(3);
+
+            if (comment == null)
+            {
+                comment = "";
+            }
+
+            String[] byteGroups = codeStr.trim().split("\\s+|\\|");
+            List<Byte> byteList = new ArrayList<>();
+
+            for (String group : byteGroups)
+            {
+                String hex = group.toLowerCase().trim();
+                for (int i = 0; i < hex.length(); i+=2)
+                {
+                    String byteHex = hex.substring(i, Math.min(i+2, hex.length()));
+                    byteList.add((byte) Integer.parseInt(byteHex, 16));
+                }
+            }
+
+            byte[] codeBytes = new byte[byteList.size()];
+            for (int i = 0; i < byteList.size(); i++)
+            {
+                codeBytes[i] = byteList.get(i);
+            }
+
+            try (Capstone cs = new Capstone(Capstone.CS_ARCH_X86, Capstone.CS_MODE_64))
+            {
+                Instruction[] insns = cs.disasm(codeBytes, address);
+                if (insns != null && insns.length > 0)
+                {
+                    for (Instruction insn : insns)
+                    {
+                        result = String.format("0x%x:\t%s\t%s %s\n", insn.getAddress(), insn.getMnemonic(), insn.getOpStr(), comment);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.error("Dissembly failed.", e);
+                result = line;
+            }
         }
-        return line;
+        return result;
     }
 
-    //    private String disassembly(String line)
-//    {
-//        Pattern linePattern = Pattern.compile("^0x([0-9a-fA-F]+):\\s+([0-9a-fA-F\\s]+)$");
-//
-//        String result = line;
-//        Matcher m = linePattern.matcher(line);
-//        if (m.find())
-//        {
-//            String addressStr = m.group(1);
-//            String codeStr = m.group(2);
-//
-//            long address = Long.parseUnsignedLong(addressStr, 16);
-//
-//            String[] byteGroups = codeStr.trim().split("\\s+");
-//            List<Byte> byteList = new ArrayList<>();
-//
-//            for (String group : byteGroups)
-//            {
-//                String hex = group.toLowerCase().replaceAll("[^0-9a-f]", "");
-//                for (int i = 0; i < hex.length(); i+=2)
-//                {
-//                    String byteHex = hex.substring(i, Math.min(i+2, hex.length()));
-//                    byteList.add((byte) Integer.parseInt(byteHex, 16));
-//                }
-//            }
-//
-//            byte[] codeBytes = new byte[byteList.size()];
-//            for (int i = 0; i < byteList.size(); i++)
-//            {
-//                codeBytes[i] = byteList.get(i);
-//            }
-//
-//            try (Capstone cs = new Capstone(Capstone.CS_ARCH_X86, Capstone.CS_MODE_64))
-//            {
-//                Instruction[] insns = cs.disasm(codeBytes, address);
-//                if (insns != null && insns.length > 0)
-//                {
-//                    for (Instruction insn : insns)
-//                    {
-//                        result = String.format("0x%x:\t%s\t%s\n", insn.getAddress(), insn.getMnemonic(), insn.getOpStr());
-//                    }
-//                }
-//            }
-//        }
-//        return result;
-//    }
-//
     public String getText()
     {
         List<String> lineTextList = lines.stream().map(line -> line.line).collect(Collectors.toUnmodifiableList());
