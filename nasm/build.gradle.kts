@@ -26,6 +26,10 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.named("runIde").configure {
+    enabled = false
+}
+
+tasks.named("buildPlugin").configure {
+    enabled = false
 }
