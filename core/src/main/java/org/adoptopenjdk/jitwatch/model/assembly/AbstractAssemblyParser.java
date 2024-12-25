@@ -292,7 +292,7 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 				logger.debug("Comment    : '{}'", comment);
 			}
 			long addressValue = AssemblyUtil.getValueFromAddress(address);
-			result = new AssemblyInstruction("", addressValue, List.of(), "", List.of(), comment, labels);
+			result = new AssemblyInstruction("", addressValue, List.of(), "", "", List.of(), comment, labels);
 		}
 		else
 		{
@@ -300,18 +300,18 @@ public abstract class AbstractAssemblyParser implements IAssemblyParser
 			if (matcher.find())
 			{
 				String address = matcher.group(1);
-				String instructionString = matcher.group(2);
+				String hexaCode = matcher.group(2);
 				String comment = matcher.group(3);
 
 				if (DEBUG_LOGGING_ASSEMBLY)
 				{
 					logger.debug("Address    : '{}'", address);
-					logger.debug("Instruction: '{}'", instructionString);
+					logger.debug("Instruction: '{}'", hexaCode);
 					logger.debug("Comment    : '{}'", comment);
 				}
 
 				long addressValue = AssemblyUtil.getValueFromAddress(address);
-				result = new AssemblyInstruction("", addressValue, List.of(), instructionString, List.of(), comment, labels);
+				result = new AssemblyInstruction("", addressValue, List.of(), "", hexaCode, List.of(), comment, labels);
 			}
 		}
 		return result;

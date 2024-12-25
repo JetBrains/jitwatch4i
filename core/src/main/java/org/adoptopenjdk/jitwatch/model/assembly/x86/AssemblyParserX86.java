@@ -210,7 +210,7 @@ public final class AssemblyParserX86 extends AbstractAssemblyParser
 			}
 		}
 
-		return new AssemblyInstruction(annotation, address, prefixes, mnemonic, operands, comment, labels);
+		return new AssemblyInstruction(annotation, address, prefixes, mnemonic, "", operands, comment, labels);
 	}
 
 	@Override

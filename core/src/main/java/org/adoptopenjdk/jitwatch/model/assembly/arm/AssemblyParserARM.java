@@ -207,7 +207,7 @@ public class AssemblyParserARM extends AbstractAssemblyParser
 			}
 		}
 
-		return new AssemblyInstruction(annotation, address, prefixes, mnemonic, operands, comment, labels);
+		return new AssemblyInstruction(annotation, address, prefixes, mnemonic, "", operands, comment, labels);
 	}
 
 	@Override

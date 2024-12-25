@@ -26,19 +26,21 @@ public class AssemblyInstruction
 	private long address;
 	private List<String> prefixes;
 	private String mnemonic;
-	private List<String> operands = new ArrayList<>();
+    private String hexaCode;
+    private List<String> operands = new ArrayList<>();
 	private List<String> commentLines = new ArrayList<>();
 	private final AssemblyLabels labels;
 	private boolean isSafePoint = false;
 
-	public AssemblyInstruction(String annotation, long address, List<String> prefixes, String mnemonic, List<String> operands,
+	public AssemblyInstruction(String annotation, long address, List<String> prefixes, String mnemonic, String hexaCode, List<String> operands,
 			String firstComment, AssemblyLabels labels)
 	{
 		this.annotation = annotation;
 		this.address = address;
 		this.prefixes = prefixes;
 		this.mnemonic = mnemonic;
-		this.operands = operands;
+        this.hexaCode = hexaCode;
+        this.operands = operands;
 		this.labels = labels;
 
 		if (firstComment != null)
@@ -65,6 +67,11 @@ public class AssemblyInstruction
 	public String getMnemonic()
 	{
 		return mnemonic;
+	}
+
+	public String getHexaCode()
+	{
+		return hexaCode;
 	}
 
 	public void setMnemonic(String mnemonic)
@@ -254,7 +261,14 @@ public class AssemblyInstruction
 			}
 		}
 
-		builder.append(mnemonic);
+		if (hexaCode.isEmpty())
+		{
+			builder.append(mnemonic);
+		}
+		else
+		{
+			builder.append(hexaCode);
+		}
 
 		if (useLocalLabels)
 		{
