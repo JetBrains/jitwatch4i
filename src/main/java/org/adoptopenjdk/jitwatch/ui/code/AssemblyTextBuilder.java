@@ -112,16 +112,23 @@ public class AssemblyTextBuilder
                         if (commentLines.size() == 0)
                         {
                             String line = instr.toString(annoWidth, 0, true);
-                            //String disLine = line;
-                            String disLine = disassembly(line);
-                            AssemblyLine assemblyLine = new AssemblyLine(disLine, instr);
+                            if (!instr.getHexaCode().isEmpty())
+                            {
+                                line = disassembly(line);
+                            }
+                            AssemblyLine assemblyLine = new AssemblyLine(line, instr);
                             lines.add(assemblyLine);
                         }
                         else
                         {
                             for (int i = 0; i < commentLines.size(); i++)
                             {
-                                AssemblyLine assemblyLine = new AssemblyLine(disassembly(instr.toString(annoWidth, i, true)), instr);
+                                String line = instr.toString(annoWidth, i, true);
+                                if (!instr.getHexaCode().isEmpty())
+                                {
+                                    line = disassembly(line);
+                                }
+                                AssemblyLine assemblyLine = new AssemblyLine(line, instr);
                                 lines.add(assemblyLine);
                             }
                         }
