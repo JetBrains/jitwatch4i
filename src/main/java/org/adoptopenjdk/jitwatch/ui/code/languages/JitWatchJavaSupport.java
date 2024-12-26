@@ -9,6 +9,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.TypeConversionUtil;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.adoptopenjdk.jitwatch.ui.code.JavaTypeUtils;
 
@@ -142,5 +143,17 @@ public class JitWatchJavaSupport implements JitWatchLanguageSupport<PsiClass, Ps
             }
         }
         return erasedType.getCanonicalText();
+    }
+
+    @Override
+    public PsiElement findMemberElement(Project project, PsiClass psiClass, IMetaMember member)
+    {
+        String memberName = member.getMemberName();
+        if (memberName == null || memberName.isEmpty())
+        {
+            return null;
+        }
+
+        return JitWatchLanguageSupportUtil.findJavaMemberElement(project, psiClass, memberName, member);
     }
 }

@@ -1,8 +1,10 @@
 package org.adoptopenjdk.jitwatch.ui.code.languages;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 
 import java.util.Collections;
@@ -53,4 +55,11 @@ public class DefaultJitLanguageSupport implements JitWatchLanguageSupport<PsiEle
     {
         return false;
     }
+
+    @Override
+    public PsiElement findMemberElement(Project project, PsiClass psiClass, IMetaMember member)
+    {
+        return null;
+    }
+
 }

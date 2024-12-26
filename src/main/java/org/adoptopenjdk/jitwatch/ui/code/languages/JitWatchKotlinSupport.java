@@ -3,21 +3,25 @@ package org.adoptopenjdk.jitwatch.ui.code.languages;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService;
 import org.jetbrains.kotlin.descriptors.CallableDescriptor;
 import org.jetbrains.kotlin.descriptors.ClassifierDescriptor;
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor;
 import org.jetbrains.kotlin.idea.stubindex.KotlinFullClassNameIndex;
-import org.jetbrains.kotlin.psi.*;
+import org.jetbrains.kotlin.psi.KtCallableDeclaration;
+import org.jetbrains.kotlin.psi.KtClassOrObject;
+import org.jetbrains.kotlin.psi.KtNamedFunction;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.DescriptorUtils;
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode;
 import org.jetbrains.kotlin.types.KotlinType;
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +29,9 @@ import java.util.List;
 
 public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrObject, KtCallableDeclaration>
 {
+
+    public static final String ACCESS_PREFIX = "access$";
+
     @Override
     public List<KtClassOrObject> getAllClasses(PsiFile file)
     {
@@ -170,4 +177,22 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
                 return fqName;
         }
     }
+
+    @Override
+    public PsiElement findMemberElement(Project project, PsiClass psiClass, IMetaMember member)
+    {
+        String memberName = member.getMemberName();
+        if (memberName == null || memberName.isEmpty())
+        {
+            return null;
+        }
+
+        if (memberName.startsWith(ACCESS_PREFIX))
+        {
+            memberName = memberName.substring(ACCESS_PREFIX.length());
+        }
+
+        return JitWatchLanguageSupportUtil.findJavaMemberElement(project, psiClass, memberName, member);
+    }
+
 }

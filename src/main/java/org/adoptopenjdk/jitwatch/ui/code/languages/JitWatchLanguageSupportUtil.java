@@ -4,7 +4,9 @@ import com.intellij.lang.Language;
 import com.intellij.lang.LanguageExtension;
 import com.intellij.lang.LanguageExtensionPoint;
 import com.intellij.openapi.extensions.ExtensionPointName;
-import com.intellij.psi.PsiElement;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.*;
+import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MemberSignatureParts;
 import org.adoptopenjdk.jitwatch.ui.code.PsiMetaMemberWrapper;
 
@@ -69,4 +71,58 @@ public class JitWatchLanguageSupportUtil
         }
         return result;
     }
+
+    public static PsiElement findJavaMemberElement(Project project, PsiClass psiClass, String memberName, IMetaMember member)
+    {
+        PsiElementFactory elementFactory = JavaPsiFacade.getInstance(project).getElementFactory();
+        PsiClassType psiClassType = elementFactory.createType(psiClass);
+
+        PsiMethod[] methods = psiClass.findMethodsByName(memberName, false);
+
+        for (PsiMethod method : methods)
+        {
+            if (method.getParameterList().getParametersCount() == member.getParamTypeNames().length)
+            {
+                boolean found = true;
+
+                for (int i = 0; i < method.getParameterList().getParametersCount(); i++)
+                {
+                    String paramTypeA = member.getParamTypeNames()[i];
+                    PsiType psiParamTypeB = method.getParameterList().getParameter(i).getType();
+                    String paramTypeB = psiClassType.resolveGenerics().getSubstitutor().substitute(psiParamTypeB).getCanonicalText();
+                    int genIndex = paramTypeB.indexOf('<');
+                    if (genIndex > 0)
+                    {
+                        // metamodel has no generics
+                        paramTypeB = paramTypeB.substring(0, genIndex);
+                    }
+                    if (!paramTypeA.equals(paramTypeB))
+                    {
+                        if (paramTypeA.contains("$"))
+                        {
+                            paramTypeA = paramTypeA.replaceAll("\\$", ".");
+                            if (!paramTypeA.equals(paramTypeB))
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            found = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (found)
+                {
+                    return method;
+                }
+            }
+        }
+
+        return null;
+    }
+
 }

@@ -136,7 +136,14 @@ public class CodeToolWindowManager implements ICompilationChangeListener
             return;
         }
 
-        PsiElement targetElement = findMemberElement(psiClass, member);
+        JitWatchLanguageSupport<PsiElement, PsiElement> languageSupport = LanguageSupport.forLanguage(psiClass.getLanguage());
+
+        if (languageSupport == null)
+        {
+            showNotification(project, "Unsupported language.", "Cannot open class: " + qualifiedName, NotificationType.ERROR);
+        }
+
+        PsiElement targetElement = languageSupport.findMemberElement(project, psiClass, member);
 
         if (targetElement == null)
         {
@@ -162,65 +169,6 @@ public class CodeToolWindowManager implements ICompilationChangeListener
                 content,
                 notificationType
         ), project);
-    }
-
-    private PsiElement findMemberElement(PsiClass psiClass, IMetaMember member)
-    {
-        String memberName = member.getMemberName();
-        if (memberName == null || memberName.isEmpty())
-        {
-            return null;
-        }
-
-        PsiElementFactory elementFactory = JavaPsiFacade.getInstance(project).getElementFactory();
-        PsiClassType psiClassType = elementFactory.createType(psiClass);
-
-        PsiMethod[] methods = psiClass.findMethodsByName(memberName, false);
-
-        for (PsiMethod method : methods)
-        {
-            if (method.getParameterList().getParametersCount() == member.getParamTypeNames().length)
-            {
-                boolean found = true;
-
-                for (int i = 0; i < method.getParameterList().getParametersCount(); i++)
-                {
-                    String paramTypeA = member.getParamTypeNames()[i];
-                    PsiType psiParamTypeB = method.getParameterList().getParameter(i).getType();
-                    String paramTypeB = psiClassType.resolveGenerics().getSubstitutor().substitute(psiParamTypeB).getCanonicalText();
-                    int genIndex = paramTypeB.indexOf('<');
-                    if (genIndex > 0)
-                    {
-                        // metamodel has no generics
-                        paramTypeB = paramTypeB.substring(0, genIndex);
-                    }
-                    if (!paramTypeA.equals(paramTypeB))
-                    {
-                        if (paramTypeA.contains("$"))
-                        {
-                            paramTypeA = paramTypeA.replaceAll("\\$", ".");
-                            if (!paramTypeA.equals(paramTypeB))
-                            {
-                                found = false;
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            found = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (found)
-                {
-                    return method;
-                }
-            }
-        }
-
-        return null;
     }
 
     protected void showMessage(String message)
