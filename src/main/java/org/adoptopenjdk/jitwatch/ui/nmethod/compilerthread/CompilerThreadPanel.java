@@ -222,7 +222,10 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
         }
 
         List<CompilerThread> threads = parent.getJITDataModel().getCompilerThreads();
-        if (threads == null || threads.isEmpty()) return;
+        if (threads == null || threads.isEmpty())
+        {
+            return;
+        }
 
         double rowHeight = paneHeight / threads.size();
         maxQueueLength = 0;
@@ -231,8 +234,7 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
 
         for (CompilerThread thread : threads)
         {
-            // Draw the thread background
-            g.setColor(new Color(32, 32, 32));  // Equivalent to Color.rgb(32, 32, 32)
+            g.setColor(new Color(32, 32, 32));
             g.fillRect((int) getXOffset(), (int) (y - usableHeight / 2), (int) panePlotWidth, (int) usableHeight);
 
             if (plotMode == PlotMode.QUEUE_LENGTH)
@@ -254,7 +256,7 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
         Compilation selectedCompilation = (selectedMember == null) ? null : selectedMember.getSelectedCompilation();
         List<Compilation> compilations = thread.getCompilations();
 
-        plotThreadHeader(g, thread, y, rowHeight);  // Draw the header
+        plotThreadHeader(g, thread, y, rowHeight);
 
         Color fillColour;
         boolean isCompilationOfSelectedMember;
@@ -267,17 +269,17 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
             {
                 if (compilation.equals(selectedCompilation))
                 {
-                    fillColour = new Color(0, 220, 255);  // COLOR_SELECTED_COMPILATION
+                    fillColour = new Color(0, 220, 255);
                 }
                 else
                 {
-                    fillColour = new Color(0, 0, 160);  // COLOR_OTHER_MEMBER_COMPILATIONS
+                    fillColour = new Color(0, 0, 160);
                 }
                 isCompilationOfSelectedMember = true;
             }
             else
             {
-                fillColour = new Color(0, 196, 0);  // COLOR_UNSELECTED_COMPILATION
+                fillColour = new Color(0, 196, 0);
                 isCompilationOfSelectedMember = false;
             }
 

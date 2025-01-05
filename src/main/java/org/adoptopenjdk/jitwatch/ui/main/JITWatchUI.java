@@ -995,12 +995,15 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
 
     void metaClassSelectedFromClassTree(MetaClass metaClass)
     {
-        classMemberList.clearClassMembers();
-        selectedMetaClass = metaClass;
+        if (metaClass != selectedMetaClass)
+        {
+            classMemberList.clearClassMembers();
+            selectedMetaClass = metaClass;
 
-        selectMember(null, false, true);
+            selectMember(null, false, true);
 
-        classMemberList.setMetaClass(metaClass);
+            classMemberList.setMetaClass(metaClass);
+        }
     }
 
     public PackageManager getPackageManager()
@@ -1029,12 +1032,13 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
 
     private void openAllTabs()
     {
-        if (optimisedLockPanel == null)
-        {
-            optimisedLockPanel = new ReportPanel(this, ReportStageType.ELIDED_LOCK, reportListOptimisedLocks);
-            optimizedLockContent = contentManager.getFactory().createContent(optimisedLockPanel, optimisedLockPanel.getTitle(), false);
-            contentManager.addContent(optimizedLockContent, 1);
-        }
+// TODO: temporary disable optimised locks since no locks are found in the compilation logs
+//        if (optimisedLockPanel == null)
+//        {
+//            optimisedLockPanel = new ReportPanel(this, ReportStageType.ELIDED_LOCK, reportListOptimisedLocks);
+//            optimizedLockContent = contentManager.getFactory().createContent(optimisedLockPanel, optimisedLockPanel.getTitle(), false);
+//            contentManager.addContent(optimizedLockContent, 1);
+//        }
         if (suggestionReportPanel == null)
         {
             suggestionReportPanel = new ReportPanel(this, ReportStageType.SUGGESTION, reportListSuggestions);
