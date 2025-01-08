@@ -27,7 +27,7 @@ JITWatch4i
 <!-- TOC -->
 
 
-Analysis and visualization of logs and assembly code from the JVM JIT (Just-In-Time) compiler, Built as a Plugin for IntelliJ IDEA.
+Analysis and visualization of logs and assembly code from the JVM JIT (Just-In-Time) compiler, built as a plugin for IntelliJ IDEA.
 It is based on the foundations of [JitWatch](https://github.com/AdoptOpenJDK/jitwatch) by Chris Newland and 
 [jitwatch-intellij](https://github.com/yole/jitwatch-intellij) by Dmitry Jemerov.
 
