@@ -56,6 +56,7 @@ manually. To enable logging, you need the following options:
 -XX:+TraceClassLoading
 -XX:+LogCompilation
 -XX:+PrintAssembly
+-XX:LogFile=my_compilation.log
 ```
 
 ### Opening a Compilation Log
