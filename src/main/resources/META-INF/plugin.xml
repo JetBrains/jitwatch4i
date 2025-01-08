@@ -7,7 +7,8 @@
   <vendor url="https://github.com/skybber/jitwatch4i">Vladimir Dvorak</vendor>
 
   <description><![CDATA[
-        Viewing HotSpot compilation in IntelliJ IDEA. See <a href="https://github.com/skybber/jitwatch4i">GitHub</a> for documentation.
+        Analysis and visualization of logs and assembly code from the JVM JIT (Just-In-Time) compiler.
+        See <a href="https://github.com/JetBrains/jitwatch4i">GitHub</a> for documentation.
     ]]></description>
 
   <depends>com.intellij.modules.java</depends>
