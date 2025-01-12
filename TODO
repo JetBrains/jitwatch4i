@@ -7,7 +7,7 @@ x popup menu on compilation list
 x tab Comp.Chain to tree component
 x assembly syntax highlighting
 x Kotlin classes
-- improve perf of tab Comp.Activity
-- improve perf of tab Timeline
-- improve perf of tab Histo
+x improve perf of tab Comp.Activity
+x improve perf of tab Timeline
+x improve perf of tab Histo
 - search in main tab (filter)
