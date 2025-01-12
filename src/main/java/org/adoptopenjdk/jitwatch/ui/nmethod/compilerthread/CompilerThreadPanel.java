@@ -344,11 +344,6 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
                 double x2 = getScaledTimestampX(timestamp);
                 double baseLine = y + rowHeight / 2;
 
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-                g.setColor(Color.WHITE);
-                g.drawString(String.valueOf(maxQueueLength), (float) getXOffset() + 4, (float) (baseLine - rowHeight + stringHeight / 2 + 4));
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-
                 boolean compilationMemberInQueue = false;
 
                 for (int i = 0; i < queueLength; i++)
@@ -371,14 +366,28 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
 
                     g.fillRect(ix, iy, iw, ih);
 
-                    if (rectWidth > 4)
+                    //if (rectWidth > 4)
                     {
-                        g.setColor(Color.BLACK);
                         g.drawRect(ix, iy, iw, ih);
                     }
 
                     addMouseListenerForCompilation(ix, iy, iw, ih, compilation);
                 }
+
+                float labelX = (float) getXOffset() + 4;
+                float labelY = (float) (baseLine - rowHeight + stringHeight / 2 + 4);
+                String label = String.valueOf(maxQueueLength);
+
+                FontMetrics fm = g.getFontMetrics();
+                int textWidth = fm.stringWidth(label);
+                int textHeight = fm.getAscent();
+
+                g.setColor(Color.BLACK);
+                g.fillRect(Math.round(labelX), Math.round(labelY - textHeight), textWidth, textHeight);
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setColor(Color.YELLOW);
+                g.drawString(label, labelX, labelY);
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
                 if (compilationMemberInQueue)
                 {
