@@ -214,6 +214,9 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
 
     protected void paintGraph(Graphics g)
     {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
         super.paintGraph(g);
 
         if (!preDraw())
@@ -239,7 +242,7 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
 
             if (plotMode == PlotMode.QUEUE_LENGTH)
             {
-                plotQueueLengths((Graphics2D) g, thread, y, usableHeight);
+                plotQueueLengths(g2d, thread, y, usableHeight);
             }
             else
             {
@@ -328,6 +331,8 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
         IMetaMember selectedMember = parent.getSelectedMember();
         Compilation selectedCompilation = (selectedMember == null) ? null : selectedMember.getSelectedCompilation();
 
+        int stringHeight = g.getFontMetrics().getHeight();
+
         for (QueueCounter counter : counters)
         {
             long timestamp = counter.getTimestamp();
@@ -338,6 +343,11 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
                 double x1 = getScaledTimestampX(lastTimestamp);
                 double x2 = getScaledTimestampX(timestamp);
                 double baseLine = y + rowHeight / 2;
+
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+                g.setColor(Color.WHITE);
+                g.drawString(String.valueOf(maxQueueLength), (float) getXOffset() + 4, (float) (baseLine - rowHeight + stringHeight / 2 + 4));
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
                 boolean compilationMemberInQueue = false;
 
@@ -356,7 +366,7 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
 
                     int ix = (int) Math.round(x1);
                     int iy = (int) Math.round(startY);
-                    int iw = (int) Math.round(rectWidth);
+                    int iw = (int) Math.ceil(rectWidth);
                     int ih = (int) Math.round(oneHeight);
 
                     g.fillRect(ix, iy, iw, ih);
@@ -598,7 +608,7 @@ public class CompilerThreadPanel extends AbstractNMethodPanel
             int ix = (int) Math.round(xCompileStart);
             int iy = (int) Math.round((yCompiled - nativeSizeHeight / 2));
             int iw = (int) Math.round((xNMethodEmitted - xCompileStart));
-            int ih = (int) Math.round(nativeSizeHeight);
+            int ih = (int) Math.ceil(nativeSizeHeight);
 
             g.fillRect(ix, iy, iw, ih);
 

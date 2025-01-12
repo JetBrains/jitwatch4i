@@ -139,8 +139,8 @@ public class TimeLinePanel extends AbstractGraphPanel
 
         g2d.setColor(Color.BLUE);
         double smX = graphGapLeft + normaliseX(journalEventTime);
-        double blobX = smX - MARKET_DIAMETER / 2;
-        double blobY = yPos - MARKET_DIAMETER / 2;
+        double blobX = smX - MARKET_DIAMETER / 2.0;
+        double blobY = yPos - MARKET_DIAMETER / 2.0;
 
         g2d.fillOval((int) blobX, (int) blobY, MARKET_DIAMETER, MARKET_DIAMETER);
 
@@ -243,9 +243,11 @@ public class TimeLinePanel extends AbstractGraphPanel
     {
         if (selectedMember != null)
         {
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setFont(new Font("Arial", Font.BOLD, 14));
             g2d.setColor(Color.WHITE);
             g2d.drawString(selectedMember.toString(), 56, 40);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         }
     }
 
@@ -301,6 +303,8 @@ public class TimeLinePanel extends AbstractGraphPanel
                 stats.getCountLevel4()
         );
 
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.drawString(statsText, (int) graphGapLeft,  (int) (graphGapTop+stdFontSize)/2);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
     }
 }

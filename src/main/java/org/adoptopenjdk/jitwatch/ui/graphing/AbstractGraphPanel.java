@@ -71,9 +71,9 @@ public abstract class AbstractGraphPanel extends JPanel
     {
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
         g2d.setFont(STANDARD_FONT);
+
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
         chartWidth = getWidth() - graphGapLeft - graphGapRight;
         chartHeight = getHeight() - graphGapTop * 2;
@@ -92,6 +92,7 @@ public abstract class AbstractGraphPanel extends JPanel
 
     protected void drawAxes(Graphics2D g2d)
     {
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (xAxisTime)
         {
             drawXAxisTime(g2d);
@@ -101,6 +102,7 @@ public abstract class AbstractGraphPanel extends JPanel
             drawXAxis(g2d);
         }
         drawYAxis(g2d);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
     }
 
     protected long getStampFromTag(Tag tag)
@@ -195,6 +197,8 @@ public abstract class AbstractGraphPanel extends JPanel
         graphGapLeft = Math.max(40.5, maxYLabelWidth * 9);
         double yLabelX = graphGapLeft - (0.5 + maxYLabelWidth) * 8;
 
+        int stringHeight = g2d.getFontMetrics().getHeight();
+
         while (gridY <= maxYQ)
         {
             if (gridY >= minYQ)
@@ -204,7 +208,7 @@ public abstract class AbstractGraphPanel extends JPanel
                 setStrokeForAxis(g2d);
                 g2d.draw(new Line2D.Double(graphGapLeft, y, graphGapLeft + chartWidth, y));
 
-                g2d.drawString(StringUtil.formatThousands(Long.toString(gridY)), (float) yLabelX, (float) (y + getStringHeight(g2d) / 2));
+                g2d.drawString(StringUtil.formatThousands(Long.toString(gridY)), (float) yLabelX, (float) (y + stringHeight / 2));
             }
             gridY += yInc;
         }
@@ -213,11 +217,6 @@ public abstract class AbstractGraphPanel extends JPanel
     protected double getApproximateStringWidth(Graphics2D g2d, String text)
     {
         return g2d.getFontMetrics().stringWidth(text);
-    }
-
-    protected double getStringHeight(Graphics2D g2d)
-    {
-        return g2d.getFontMetrics().getHeight();
     }
 
     private long getXStepTime()

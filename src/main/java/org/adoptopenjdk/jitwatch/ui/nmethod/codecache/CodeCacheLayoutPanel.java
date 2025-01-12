@@ -293,8 +293,6 @@ public class CodeCacheLayoutPanel extends AbstractNMethodPanel
 
         Graphics2D g2d = (Graphics2D) g;
 
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
         Compilation selectedCompilation = selectedMember.getSelectedCompilation();
 
         List<CodeCacheEvent> eventsOfSelectedMember = new ArrayList<>();

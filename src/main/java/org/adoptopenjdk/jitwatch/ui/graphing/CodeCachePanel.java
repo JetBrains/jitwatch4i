@@ -137,19 +137,6 @@ public class CodeCachePanel extends AbstractGraphPanel
         }
     }
 
-    private void baseRedraw(Graphics2D g2d)
-    {
-        // Drawing the background and chart area
-        g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, getWidth(), getHeight());
-
-        g2d.setColor(new Color(210, 255, 255));
-        g2d.fillRect((int) graphGapLeft, (int) graphGapTop, getWidth() - 40, getHeight() - 80);
-
-        g2d.setColor(Color.BLACK);
-        g2d.drawRect((int) graphGapLeft, (int) graphGapTop, getWidth() - 40, getHeight() - 80);
-    }
-
     private double addToGraph(Graphics2D g2d, double lastCX, double lastCY, Color colourLine, float lineWidth, CodeCacheEvent event, double x)
     {
         long freeCodeCache = event.getFreeCodeCache();
@@ -167,10 +154,12 @@ public class CodeCachePanel extends AbstractGraphPanel
         double labelX;
         double labelY;
 
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         if (labelLeft)
         {
             labelX = x - getApproximateStringWidth(g2d, text) - 16;
-            labelY = Math.min(y - getStringHeight(g2d), graphGapTop + chartHeight - 32);
+            labelY = Math.min(y - g2d.getFontMetrics().stringWidth(text), graphGapTop + chartHeight - 32);
         }
         else
         {
@@ -179,6 +168,8 @@ public class CodeCachePanel extends AbstractGraphPanel
         }
 
         drawLabel(g2d, text, labelX, labelY, background);
+
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
         labelLeft = !labelLeft;
     }
