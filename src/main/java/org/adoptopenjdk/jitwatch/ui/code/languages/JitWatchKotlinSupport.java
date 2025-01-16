@@ -49,8 +49,8 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
     @Override
     public KtClassOrObject findClass(Project project, MetaClass metaClass)
     {
-        Collection<KtClassOrObject> classes = KotlinFullClassNameIndex.getInstance()
-                .get(metaClass.getFullyQualifiedName(), project, ProjectScope.getAllScope(project));
+        Collection<KtClassOrObject> classes =
+                KotlinFullClassNameIndex.Helper.get(metaClass.getFullyQualifiedName(), project, ProjectScope.getAllScope(project));
 
         return classes.isEmpty() ? null : classes.iterator().next();
     }
