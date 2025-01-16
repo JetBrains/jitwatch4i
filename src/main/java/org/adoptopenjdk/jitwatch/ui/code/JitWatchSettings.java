@@ -10,7 +10,7 @@ public class JitWatchSettings
     private boolean enabled = false;
     private File lastLogPath = null;
 
-    private static final Key<JitWatchSettings> KEY = Key.create("ru.yole.jitwatch.settings");
+    private static final Key<JitWatchSettings> KEY = Key.create("org.adoptopenjdk.jitwatch.settings");
 
     public JitWatchSettings()
     {
