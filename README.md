@@ -53,7 +53,6 @@ Alternatively, you can add the logging options to the VM options of your run con
 manually. To enable logging, you need the following options:
 ```
 -XX:+UnlockDiagnosticVMOptions
--XX:+TraceClassLoading
 -XX:+LogCompilation
 -XX:+PrintAssembly
 -XX:LogFile=my_compilation.log

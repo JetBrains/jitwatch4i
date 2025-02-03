@@ -92,7 +92,6 @@ public class JitRunConfigurationExtension extends RunConfigurationExtension
             }
             ParametersList vmOptions = params.getVMParametersList();
             vmOptions.add("-XX:+UnlockDiagnosticVMOptions");
-            vmOptions.add("-XX:+TraceClassLoading");
             vmOptions.add("-XX:+LogCompilation");
             vmOptions.add("-XX:+PrintAssembly");
             vmOptions.add("-XX:LogFile=" + logPath.getAbsolutePath());
