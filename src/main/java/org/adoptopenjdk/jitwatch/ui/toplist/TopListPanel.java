@@ -66,7 +66,7 @@ public class TopListPanel extends JPanel
                         String compileKind = mm.getCompiledAttribute(ATTR_COMPILE_KIND);
                         if (compileID != null && (compileKind == null || !OSR.equals(compileKind)))
                         {
-                            long value = Long.valueOf(mm.getCompiledAttribute(ATTR_COMPILE_ID));
+                            long value = Long.valueOf(compileID);
                             topList.add(new MemberScore(mm, value));
                         }
                     }
@@ -82,7 +82,7 @@ public class TopListPanel extends JPanel
                         String compileKind = mm.getCompiledAttribute(ATTR_COMPILE_KIND);
                         if (compileID != null && compileKind != null && OSR.equals(compileKind))
                         {
-                            long value = Long.valueOf(mm.getCompiledAttribute(ATTR_COMPILE_ID));
+                            long value = Long.valueOf(compileID);
                             topList.add(new MemberScore(mm, value));
                         }
                     }
@@ -122,7 +122,15 @@ public class TopListPanel extends JPanel
             }
         });
 
-        tableModel = new DefaultTableModel();
+        tableModel = new DefaultTableModel() {
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 0) {
+                    return Long.class;
+                }
+                return String.class;
+            }
+        };
         tableView = new JBTable(tableModel);
         JBScrollPane scrollPane = new JBScrollPane(tableView);
 
@@ -168,7 +176,8 @@ public class TopListPanel extends JPanel
         tableModel.setRowCount(0);
         tableModel.setColumnIdentifiers(topListWrapper.getColumns());
         tableView.removeColumn(tableView.getColumnModel().getColumn(2));
-        tableView.getColumnModel().getColumn(0).setPreferredWidth(100);
+        tableView.getColumnModel().getColumn(0).setPreferredWidth(150);
+        tableView.getColumnModel().getColumn(0).setMaxWidth(200);
         tableView.getColumnModel().getColumn(1).setPreferredWidth(900);
 
         List<ITopListScore> topList = topListWrapper.getVisitable().buildTopList();
