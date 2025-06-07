@@ -1,26 +1,27 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.17.4"
+    id("org.jetbrains.kotlin.jvm") version "2.1.21"
+    id("org.jetbrains.intellij.platform") version "2.6.0"
 }
 
 group = "org.intellij.sdk"
-version = "0.3.4"
+version = "0.3.5"
 
 repositories {
     mavenCentral()
-}
-
-// Configure Gradle IntelliJ Plugin
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-intellij {
-    version.set("2023.2.6")
-    type.set("IC") // Target IDE Platform
-    plugins.set(listOf("java", "org.jetbrains.kotlin"))
+    intellijPlatform {           // adds the JetBrains repositories the plugin needs
+        defaultRepositories()
+    }
 }
 
 dependencies {
-    implementation(project("core"))
-    implementation(project("nasm"))
+    intellijPlatform {
+        intellijIdeaCommunity("2024.3.6")
+        bundledPlugin("com.intellij.java")
+        bundledPlugin("org.jetbrains.kotlin")
+    }
+    implementation(project(":core"))
+    implementation(project(":nasm"))
     implementation("com.github.zhkl0228:capstone:3.1.8") {
         exclude(group = "net.java.dev.jna", module = "jna")
         exclude(group = "org.scijava", module = "native-lib-loader")
@@ -28,15 +29,17 @@ dependencies {
 }
 
 tasks {
-    // Set the JVM compatibility versions
-    withType<JavaCompile> {
+    withType<JavaCompile>().configureEach {
         sourceCompatibility = "17"
         targetCompatibility = "17"
     }
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        kotlinOptions.jvmTarget = "17"
+    }
 
     patchPluginXml {
-        sinceBuild.set("232")
-        untilBuild.set("251.*")
+        sinceBuild.set("242")
+        untilBuild.set("245.*")
     }
 
     signPlugin {

@@ -20,6 +20,10 @@
     ]]>
   </change-notes>
 
+  <extensions defaultExtensionNs="org.jetbrains.kotlin">
+    <supportsKotlinPluginMode supportsK2="true"/>
+  </extensions>
+
   <extensionPoints>
     <extensionPoint qualifiedName="org.adoptopenjdk.jitwatch.ui.code.languageSupport" beanClass="com.intellij.lang.LanguageExtensionPoint">
       <with attribute="implementationClass" implements="org.adoptopenjdk.jitwatch.ui.code.languages.JitWatchLanguageSupport"/>
