@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "org.intellij.sdk"
-version = "0.3.5"
+version = "0.3.6"
 
 repositories {
     mavenCentral()
@@ -40,7 +40,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("242")
+        sinceBuild.set("232")
         untilBuild.set("252.*")
     }
 
