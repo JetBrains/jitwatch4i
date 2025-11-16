@@ -3,6 +3,7 @@ package org.adoptopenjdk.jitwatch.ui.code;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.editor.event.CaretListener;
@@ -206,7 +207,8 @@ public class CodeToolWindowManager implements ICompilationChangeListener
             return;
         }
 
-        activeSourceFile = PsiManager.getInstance(project).findFile(file);
+        activeSourceFile = ReadAction.compute(() -> activeSourceFile = PsiManager.getInstance(project).findFile(file));
+
         if (activeSourceFile == null)
         {
             showMessage("Please select a source file");

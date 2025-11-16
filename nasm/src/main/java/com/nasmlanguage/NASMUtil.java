@@ -25,12 +25,14 @@ SOFTWARE.
 
 package com.nasmlanguage;
 
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.search.*;
+import com.intellij.psi.search.FileTypeIndex;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.SmartList;
@@ -39,7 +41,10 @@ import com.nasmlanguage.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 class NASMUtil {
 
@@ -85,7 +90,7 @@ class NASMUtil {
                 FileTypeIndex.NAME, NASMFileType.INSTANCE, GlobalSearchScope.allScope(project)
         );
         for (VirtualFile virtualFile : virtualFiles) {
-            NASMFile assemblyFile = (NASMFile)PsiManager.getInstance(project).findFile(virtualFile);
+            NASMFile assemblyFile = ReadAction.compute(() -> (NASMFile) PsiManager.getInstance(project).findFile(virtualFile));
             if (assemblyFile != null) {
                 Collection<NASMStructure> nasmStructs = PsiTreeUtil.collectElementsOfType(assemblyFile, NASMStructure.class);
                 if (!nasmStructs.isEmpty()) {
@@ -133,7 +138,7 @@ class NASMUtil {
         Collection<VirtualFile> virtualFiles =
                 FileTypeIndex.getFiles(NASMFileType.INSTANCE, GlobalSearchScope.allScope(project));
         for (VirtualFile virtualFile : virtualFiles) {
-            NASMFile simpleFile = (NASMFile) PsiManager.getInstance(project).findFile(virtualFile);
+            NASMFile simpleFile = ReadAction.compute(() -> (NASMFile) PsiManager.getInstance(project).findFile(virtualFile));
             if (simpleFile != null) {
                 NASMIdentifier[] identifiers = PsiTreeUtil.getChildrenOfType(simpleFile, NASMIdentifier.class);
                 if (identifiers != null) {
@@ -192,7 +197,7 @@ class NASMUtil {
         Collection<VirtualFile> virtualFiles =
                 FileTypeIndex.getFiles(NASMFileType.INSTANCE, GlobalSearchScope.allScope(project));
         for (VirtualFile virtualFile : virtualFiles) {
-            NASMFile simpleFile = (NASMFile) PsiManager.getInstance(project).findFile(virtualFile);
+            NASMFile simpleFile = ReadAction.compute(() -> (NASMFile) PsiManager.getInstance(project).findFile(virtualFile));
             if (simpleFile != null) {
 
                 NASMLabel[] labels = findAllChildrenOfType(simpleFile, NASMLabel.class); /*PsiTreeUtil.getChildrenOfType*/
@@ -217,7 +222,7 @@ class NASMUtil {
         Collection<VirtualFile> virtualFiles = FileBasedIndex.getInstance().getContainingFiles(FileTypeIndex.NAME,
                 NASMFileType.INSTANCE, GlobalSearchScope.allScope(project));
         for (VirtualFile virtualFile : virtualFiles) {
-            NASMFile nasmFile = (NASMFile)PsiManager.getInstance(project).findFile(virtualFile);
+            NASMFile nasmFile = ReadAction.compute(() -> (NASMFile)PsiManager.getInstance(project).findFile(virtualFile));
             if (nasmFile != null) {
                 Collection<NASMIdentifier> nasmIdentifiers = PsiTreeUtil.collectElementsOfType(nasmFile, NASMIdentifier.class);
                 result.addAll(nasmIdentifiers);
