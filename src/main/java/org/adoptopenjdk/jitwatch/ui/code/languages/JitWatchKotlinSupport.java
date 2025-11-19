@@ -1,6 +1,7 @@
 package org.adoptopenjdk.jitwatch.ui.code.languages;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiClass;
@@ -40,7 +41,7 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
             @Override
             public List<KtClassOrObject> compute()
             {
-                Collection<KtClassOrObject> ktClasses = PsiTreeUtil.collectElementsOfType(file, KtClassOrObject.class);
+                Collection<KtClassOrObject> ktClasses = ReadAction.compute(() -> PsiTreeUtil.collectElementsOfType(file, KtClassOrObject.class));
                 return new ArrayList<>(ktClasses);
             }
         });
@@ -69,7 +70,7 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
     @Override
     public KtCallableDeclaration findMethodAtOffset(PsiFile file, int offset)
     {
-        return PsiTreeUtil.getParentOfType(file.findElementAt(offset), KtCallableDeclaration.class);
+        return ReadAction.compute(() -> PsiTreeUtil.getParentOfType(file.findElementAt(offset), KtCallableDeclaration.class));
     }
 
     @Override
@@ -81,7 +82,7 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
     @Override
     public KtClassOrObject getContainingClass(KtCallableDeclaration method)
     {
-        KtClassOrObject parentOfType = PsiTreeUtil.getParentOfType(method, KtClassOrObject.class);
+        KtClassOrObject parentOfType = ReadAction.compute(() -> PsiTreeUtil.getParentOfType(method, KtClassOrObject.class));
         return parentOfType;
     }
 

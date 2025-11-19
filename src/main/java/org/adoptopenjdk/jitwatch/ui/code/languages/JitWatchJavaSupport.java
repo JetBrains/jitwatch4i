@@ -3,6 +3,7 @@ package org.adoptopenjdk.jitwatch.ui.code.languages;
 import com.intellij.debugger.engine.JVMNameUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.psi.*;
@@ -28,7 +29,7 @@ public class JitWatchJavaSupport implements JitWatchLanguageSupport<PsiClass, Ps
             @Override
             public List<PsiClass> compute()
             {
-                Collection<PsiClass> psiClasses = PsiTreeUtil.collectElementsOfType(file, PsiClass.class);
+                Collection<PsiClass> psiClasses = ReadAction.compute(() -> PsiTreeUtil.collectElementsOfType(file, PsiClass.class));
                 return new ArrayList<>(psiClasses);
             }
         });
@@ -58,7 +59,7 @@ public class JitWatchJavaSupport implements JitWatchLanguageSupport<PsiClass, Ps
     @Override
     public PsiMethod findMethodAtOffset(PsiFile file, int offset)
     {
-        return PsiTreeUtil.getParentOfType(file.findElementAt(offset), PsiMethod.class);
+        return ReadAction.compute(() -> PsiTreeUtil.getParentOfType(file.findElementAt(offset), PsiMethod.class));
     }
 
     @Override
