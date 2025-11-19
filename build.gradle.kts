@@ -9,6 +9,7 @@ plugins {
 group = "org.intellij.sdk"
 version = "0.3.8"
 
+
 repositories {
     mavenCentral()
     intellijPlatform {           // adds the JetBrains repositories the plugin needs
