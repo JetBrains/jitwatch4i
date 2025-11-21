@@ -5,6 +5,10 @@
  */
 package org.adoptopenjdk.jitwatch.ui.main;
 
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.diagnostic.Logger;
@@ -733,7 +737,13 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Log Files", "log"));
 
-        String searchDir = getConfig().getLastLogDir();
+        String searchDir = getConfiguredLogDirFromSelectedRunConfiguration(project);
+
+        if (searchDir == null)
+        {
+            searchDir = getConfig().getLastLogDir();
+        }
+
         if (searchDir == null)
         {
             searchDir = System.getProperty("user.dir");
@@ -756,6 +766,57 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
             return true;
         }
         return false;
+    }
+
+    private String getConfiguredLogDirFromSelectedRunConfiguration(Project project)
+    {
+        RunManager runManager = RunManager.getInstance(project);
+        RunnerAndConfigurationSettings selected = runManager.getSelectedConfiguration();
+        if (selected == null)
+        {
+            return null;
+        }
+
+        RunConfiguration rc = selected.getConfiguration();
+        if (!(rc instanceof RunConfigurationBase))
+        {
+            return null;
+        }
+
+        RunConfigurationBase<?> configuration = (RunConfigurationBase<?>) rc;
+        JitWatchSettings settings = JitWatchSettings.Companion.getOrCreate(configuration);
+
+        if (!settings.isEnabled())
+        {
+            return null;
+        }
+
+        String pattern = settings.getLogFilePattern();
+        if (pattern == null || pattern.isBlank())
+        {
+            pattern = JitWatchSettings.DEFAULT_LOG_FILE_PATTERN;
+        }
+
+        String projectBaseDir = project.getBasePath() != null
+                ? project.getBasePath()
+                : System.getProperty("user.dir");
+
+        String timeStamp = new java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss")
+                .format(new java.util.Date());
+
+        String resolvedPath = pattern;
+        resolvedPath = resolvedPath.replace("${project.basedir}", projectBaseDir);
+        resolvedPath = resolvedPath.replace("${java.io.tmpdir}", System.getProperty("java.io.tmpdir"));
+        resolvedPath = resolvedPath.replace("${TIME_STAMP}", timeStamp);
+
+        File file = new File(resolvedPath);
+        File dir = file.getParentFile();
+        if (dir != null && dir.exists())
+        {
+            return dir.getAbsolutePath();
+        }
+
+        return null;
     }
 
     private void setJITLogFile(File logFile)
