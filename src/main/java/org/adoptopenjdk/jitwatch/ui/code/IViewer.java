@@ -1,7 +1,6 @@
 package org.adoptopenjdk.jitwatch.ui.code;
 
 import com.intellij.openapi.editor.LogicalPosition;
-import com.intellij.psi.PsiFile;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 
 public interface IViewer

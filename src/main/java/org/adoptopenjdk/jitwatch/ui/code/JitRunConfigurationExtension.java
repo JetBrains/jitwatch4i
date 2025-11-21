@@ -14,13 +14,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 
 public class JitRunConfigurationExtension extends RunConfigurationExtension
 {
     private static final Logger logger = Logger.getInstance(JitRunConfigurationExtension.class);
 
     private static final String JITWATCH_ENABLED_ATTRIBUTE = "jitwatch-enabled";
+    private static final String JITWATCH_LOG_FILE_PATTERN_ATTRIBUTE = "jitwatch-log-file-pattern";
 
     @Override
     public <P extends RunConfigurationBase<?>> @NotNull SettingsEditor<P> createEditor(@NotNull P configuration)
@@ -61,6 +61,16 @@ public class JitRunConfigurationExtension extends RunConfigurationExtension
     {
         JitWatchSettings settings = JitWatchSettings.Companion.getOrCreate(runConfiguration);
         settings.setEnabled("true".equals(element.getAttributeValue(JITWATCH_ENABLED_ATTRIBUTE)));
+
+        String pattern = element.getAttributeValue(JITWATCH_LOG_FILE_PATTERN_ATTRIBUTE);
+        if (pattern == null || pattern.isBlank())
+        {
+            settings.setLogFilePattern(JitWatchSettings.DEFAULT_LOG_FILE_PATTERN);
+        }
+        else
+        {
+            settings.setLogFilePattern(pattern);
+        }
     }
 
     @Override
@@ -70,6 +80,11 @@ public class JitRunConfigurationExtension extends RunConfigurationExtension
         if (settings.isEnabled())
         {
             element.setAttribute(JITWATCH_ENABLED_ATTRIBUTE, "true");
+        }
+        String pattern = settings.getLogFilePattern();
+        if (pattern != null && !pattern.isBlank())
+        {
+            element.setAttribute(JITWATCH_LOG_FILE_PATTERN_ATTRIBUTE, pattern);
         }
     }
 
@@ -81,22 +96,46 @@ public class JitRunConfigurationExtension extends RunConfigurationExtension
         JitWatchSettings settings = JitWatchSettings.Companion.getOrCreate(configuration);
         if (settings.isEnabled())
         {
-            File logPath = null;
-            try
+            File logPath;
+            String pattern = settings.getLogFilePattern();
+            if (pattern == null || pattern.isBlank())
             {
-                logPath = FileUtil.createTempFile("jitwatch", ".log");
+                pattern = JitWatchSettings.DEFAULT_LOG_FILE_PATTERN;
             }
-            catch (IOException e)
+
+            String resolved = resolveLogPattern(pattern, configuration);
+            logPath = new File(resolved);
+            FileUtil.createParentDirs(logPath);
+
+            if (logPath != null)
             {
-                logger.error("Cannot create compilation temp file!", e);
+                ParametersList vmOptions = params.getVMParametersList();
+                vmOptions.add("-XX:+UnlockDiagnosticVMOptions");
+                vmOptions.add("-XX:+LogCompilation");
+                vmOptions.add("-XX:+PrintAssembly");
+                vmOptions.add("-XX:LogFile=" + logPath.getAbsolutePath());
+                settings.setLastLogPath(logPath);
             }
-            ParametersList vmOptions = params.getVMParametersList();
-            vmOptions.add("-XX:+UnlockDiagnosticVMOptions");
-            vmOptions.add("-XX:+LogCompilation");
-            vmOptions.add("-XX:+PrintAssembly");
-            vmOptions.add("-XX:LogFile=" + logPath.getAbsolutePath());
-            settings.setLastLogPath(logPath);
         }
+    }
+
+    private String resolveLogPattern(String pattern, RunConfigurationBase<?> configuration)
+    {
+        String projectBaseDir = "";
+        if (configuration.getProject().getBasePath() != null)
+        {
+            projectBaseDir = configuration.getProject().getBasePath();
+        }
+
+        String timeStamp = new java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss")
+                .format(new java.util.Date());
+
+        String result = pattern;
+        result = result.replace("${project.basedir}", projectBaseDir);
+        result = result.replace("${java.io.tmpdir}", System.getProperty("java.io.tmpdir"));
+        result = result.replace("${TIME_STAMP}", timeStamp);
+
+        return result;
     }
 
     @Override

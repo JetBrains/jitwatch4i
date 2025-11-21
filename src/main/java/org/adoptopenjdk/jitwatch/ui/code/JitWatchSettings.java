@@ -7,7 +7,10 @@ import java.io.File;
 
 public class JitWatchSettings
 {
+    public static final String DEFAULT_LOG_FILE_PATTERN = "${java.io.tmpdir}/jitwatch-${TIME_STAMP}.log";
+
     private boolean enabled = false;
+    private String logFilePattern = DEFAULT_LOG_FILE_PATTERN;
     private File lastLogPath = null;
 
     private static final Key<JitWatchSettings> KEY = Key.create("org.adoptopenjdk.jitwatch.settings");
@@ -16,9 +19,10 @@ public class JitWatchSettings
     {
     }
 
-    public JitWatchSettings(boolean enabled, File lastLogPath)
+    public JitWatchSettings(boolean enabled, String logFilePattern, File lastLogPath)
     {
         this.enabled = enabled;
+        this.logFilePattern = logFilePattern;
         this.lastLogPath = lastLogPath;
     }
 
@@ -30,6 +34,16 @@ public class JitWatchSettings
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
+    }
+
+    public String getLogFilePattern()
+    {
+        return logFilePattern;
+    }
+
+    public void setLogFilePattern(String logFilePattern)
+    {
+        this.logFilePattern = logFilePattern;
     }
 
     public File getLastLogPath()
