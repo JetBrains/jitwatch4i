@@ -187,7 +187,20 @@ public class AssemblyTextBuilder
                 codeBytes[i] = byteList.get(i);
             }
 
-            try (Capstone cs = new Capstone(Capstone.CS_ARCH_X86, Capstone.CS_MODE_64))
+            String osArch = System.getProperty("os.arch");
+
+            int arch;
+            int mode;
+
+            if (osArch != null && (osArch.contains("aarch64") || osArch.contains("arm64"))) {
+                arch = Capstone.CS_ARCH_ARM64;
+                mode = Capstone.CS_MODE_ARM;
+            } else {
+                arch = Capstone.CS_ARCH_X86;
+                mode = Capstone.CS_MODE_64;
+            }
+
+            try (Capstone cs = new Capstone(arch, mode))
             {
                 Instruction[] insns = cs.disasm(codeBytes, address);
                 if (insns != null && insns.length > 0)
