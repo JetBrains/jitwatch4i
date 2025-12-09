@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "org.intellij.sdk"
-version = "0.3.9"
+version = "0.3.10"
 
 
 repositories {
@@ -42,7 +42,6 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("232")
-        untilBuild.set("252.*")
     }
 
     signPlugin {
