@@ -30,7 +30,6 @@ import java.util.List;
 
 public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrObject, KtCallableDeclaration>
 {
-
     public static final String ACCESS_PREFIX = "access$";
 
     @Override
@@ -49,6 +48,10 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
 
     @Override
     public KtClassOrObject findClass(Project project, MetaClass metaClass)
+    {
+       return ReadAction.compute(() -> doFindClass(project, metaClass));
+    }
+    private KtClassOrObject doFindClass(Project project, MetaClass metaClass)
     {
         Collection<KtClassOrObject> classes =
                 KotlinFullClassNameIndex.Helper.get(metaClass.getFullyQualifiedName(), project, ProjectScope.getAllScope(project));
@@ -88,6 +91,11 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
 
     @Override
     public boolean matchesSignature(KtCallableDeclaration method, String memberName, List<String> paramTypeNames, String returnTypeName)
+    {
+       return ReadAction.compute(() -> doMatchesSignature(method, memberName, paramTypeNames, returnTypeName));
+    }
+
+    private boolean doMatchesSignature(KtCallableDeclaration method, String memberName, List<String> paramTypeNames, String returnTypeName)
     {
         BindingContext bindingContext = KotlinCacheService.Companion.getInstance(method.getProject())
                 .getResolutionFacade(method.getContainingKtFile())

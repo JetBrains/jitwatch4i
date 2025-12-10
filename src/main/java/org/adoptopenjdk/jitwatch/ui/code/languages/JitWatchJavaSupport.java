@@ -38,8 +38,10 @@ public class JitWatchJavaSupport implements JitWatchLanguageSupport<PsiClass, Ps
     @Override
     public PsiClass findClass(Project project, MetaClass metaClass)
     {
-        PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(
-                metaClass.getFullyQualifiedName(), ProjectScope.getAllScope(project));
+        PsiClass psiClass = ReadAction.compute(() ->
+            JavaPsiFacade.getInstance(project).findClass(
+                metaClass.getFullyQualifiedName(), ProjectScope.getAllScope(project))
+        );
         if (psiClass != null && psiClass.getLanguage() == JavaLanguage.INSTANCE)
         {
             return psiClass;
@@ -65,17 +67,22 @@ public class JitWatchJavaSupport implements JitWatchLanguageSupport<PsiClass, Ps
     @Override
     public String getClassVMName(PsiClass cls)
     {
-        return JVMNameUtil.getClassVMName(cls);
+        return ReadAction.compute(() -> JVMNameUtil.getClassVMName(cls));
     }
 
     @Override
     public PsiClass getContainingClass(PsiMethod method)
     {
-        return method.getContainingClass();
+        return  ReadAction.compute(() -> method.getContainingClass());
     }
 
     @Override
     public boolean matchesSignature(PsiMethod method, String memberName, List<String> paramTypeNames, String returnTypeName)
+    {
+       return ReadAction.compute(() -> doMatchesSignature(method, memberName, paramTypeNames, returnTypeName));
+    }
+
+    private boolean doMatchesSignature(PsiMethod method, String memberName, List<String> paramTypeNames, String returnTypeName)
     {
         String psiMethodName;
         if (method.isConstructor())
@@ -136,7 +143,7 @@ public class JitWatchJavaSupport implements JitWatchLanguageSupport<PsiClass, Ps
             PsiClass psiClass = ((PsiClassType) erasedType).resolve();
             if (psiClass != null)
             {
-                String vmName = JVMNameUtil.getClassVMName(psiClass);
+                String vmName = ReadAction.compute(() -> JVMNameUtil.getClassVMName(psiClass));
                 if (vmName != null)
                 {
                     return vmName;

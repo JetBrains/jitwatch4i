@@ -135,7 +135,7 @@ public class TagProcessor
 					currentTag = currentTag.getParent();
 				}
 				
-				if (JITWatchConstants.TAG_PARSE.equals(currentTag.getName()))
+				if (JITWatchConstants.TAG_PARSE.equals(currentTag.getName()) && !methodIDStack.isEmpty())
 				{
 					methodIDStack.pop();					
 				}				
