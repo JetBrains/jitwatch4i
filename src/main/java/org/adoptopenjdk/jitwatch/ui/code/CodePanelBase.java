@@ -1,6 +1,7 @@
 package org.adoptopenjdk.jitwatch.ui.code;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.editor.event.CaretListener;
@@ -121,8 +122,11 @@ public abstract class CodePanelBase extends JPanel implements IViewer, Disposabl
 
     private void moveCaretToLine(int line)
     {
-        viewerEditor.getCaretModel().moveToLogicalPosition(new LogicalPosition(line, 0));
-        viewerEditor.getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
+        ReadAction.run(() -> {
+            LogicalPosition pos = new LogicalPosition(line, 0);
+            viewerEditor.getCaretModel().moveToLogicalPosition(pos);
+            viewerEditor.getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
+        });
     }
 
     public void moveSourceEditorCaretToLine(int line)
