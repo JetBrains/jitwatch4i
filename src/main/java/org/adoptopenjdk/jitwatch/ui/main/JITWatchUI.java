@@ -43,6 +43,7 @@ import org.adoptopenjdk.jitwatch.ui.compilechain.CompileChainPanel;
 import org.adoptopenjdk.jitwatch.ui.graphing.CodeCachePanel;
 import org.adoptopenjdk.jitwatch.ui.graphing.HistoPanel;
 import org.adoptopenjdk.jitwatch.ui.graphing.TimeLinePanel;
+import org.adoptopenjdk.jitwatch.ui.journal.JournalPanel;
 import org.adoptopenjdk.jitwatch.ui.log.LogPanel;
 import org.adoptopenjdk.jitwatch.ui.nmethod.codecache.CodeCacheLayoutPanel;
 import org.adoptopenjdk.jitwatch.ui.nmethod.compilerthread.CompilerThreadPanel;
@@ -124,6 +125,8 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
     private Content suggestionReportContent;
     private ReportPanel optimisedLockPanel;
     private Content optimizedLockContent;
+    private JournalPanel journalPanel;
+    private Content journalContent;
 
     private LogPanel logPanel;
     private Content logContent;
@@ -1100,6 +1103,16 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
 //            optimizedLockContent = contentManager.getFactory().createContent(optimisedLockPanel, optimisedLockPanel.getTitle(), false);
 //            contentManager.addContent(optimizedLockContent, 1);
 //        }
+        if (journalPanel == null)
+        {
+            journalPanel = new JournalPanel();
+            journalContent = contentManager
+                .getFactory()
+                .createContent(journalPanel, "Journal", false);
+
+            contentManager.addContent(journalContent, 1);
+            listenerCompilationChanged.add(journalPanel);
+        }
         if (suggestionReportPanel == null)
         {
             suggestionReportPanel = new ReportPanel(this, ReportStageType.SUGGESTION, reportListSuggestions);
@@ -1170,6 +1183,12 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
 
     private void closeAllTabs()
     {
+        if (journalContent != null)
+        {
+            contentManager.removeContent(journalContent, true);
+            journalPanel = null;
+            journalContent = null;
+        }
         if (topListContent != null)
         {
             contentManager.removeContent(topListContent, true);

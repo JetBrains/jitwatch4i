@@ -418,6 +418,10 @@ public class JitWatchModelService
             String methodName = methodAttrs.get(JITWatchConstants.ATTR_NAME);
             String calleeClass = ParseUtil.lookupType(holder, parseDictionary);
             String calleeMethod = StringUtil.replaceXMLEntities(methodName);
+            if (calleeClass == null)
+            {
+                return "";
+            }
             StringBuilder builder = new StringBuilder(calleeClass)
                     .append(".")
                     .append(calleeMethod)
