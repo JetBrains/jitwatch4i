@@ -62,12 +62,14 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
     @Override
     public List<KtCallableDeclaration> getAllMethods(KtClassOrObject cls)
     {
-        List<KtCallableDeclaration> methods = new ArrayList<>();
-        methods.addAll(cls.getDeclarations().stream()
-                .filter(declaration -> declaration instanceof KtCallableDeclaration)
-                .map(declaration -> (KtNamedFunction) declaration)
-                .toList());
-        return methods;
+        return ReadAction.compute(() -> {
+            List<KtCallableDeclaration> methods = new ArrayList<>();
+            methods.addAll(cls.getDeclarations().stream()
+                    .filter(declaration -> declaration instanceof KtCallableDeclaration)
+                    .map(declaration -> (KtCallableDeclaration) declaration)
+                    .toList());
+            return methods;
+        });
     }
 
     @Override
@@ -78,8 +80,13 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
 
     @Override
     public String getClassVMName(KtClassOrObject cls) {
-        String fqName = cls.getFqName().asString();
-        return fqName;
+        return ReadAction.compute(() -> {
+            if (cls.getFqName() == null)
+            {
+                return null;
+            }
+            return cls.getFqName().asString();
+        });
     }
 
     @Override
