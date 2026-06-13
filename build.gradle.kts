@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "org.intellij.sdk"
-version = "0.3.14"
+version = "0.3.15"
 
 
 repositories {

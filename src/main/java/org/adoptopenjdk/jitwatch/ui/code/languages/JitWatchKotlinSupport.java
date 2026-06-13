@@ -11,18 +11,12 @@ import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.adoptopenjdk.jitwatch.model.IMetaMember;
 import org.adoptopenjdk.jitwatch.model.MetaClass;
-import org.jetbrains.kotlin.caches.resolve.KotlinCacheService;
-import org.jetbrains.kotlin.descriptors.CallableDescriptor;
-import org.jetbrains.kotlin.descriptors.ClassifierDescriptor;
-import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor;
 import org.jetbrains.kotlin.idea.stubindex.KotlinFullClassNameIndex;
 import org.jetbrains.kotlin.psi.KtCallableDeclaration;
 import org.jetbrains.kotlin.psi.KtClassOrObject;
-import org.jetbrains.kotlin.psi.KtNamedFunction;
-import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.resolve.DescriptorUtils;
-import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode;
-import org.jetbrains.kotlin.types.KotlinType;
+import org.jetbrains.kotlin.psi.KtConstructor;
+import org.jetbrains.kotlin.psi.KtParameter;
+import org.jetbrains.kotlin.psi.KtTypeReference;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -104,31 +98,14 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
 
     private boolean doMatchesSignature(KtCallableDeclaration method, String memberName, List<String> paramTypeNames, String returnTypeName)
     {
-        BindingContext bindingContext = KotlinCacheService.Companion.getInstance(method.getProject())
-                .getResolutionFacade(method.getContainingKtFile())
-                .analyze(method, BodyResolveMode.PARTIAL);
-
-        if (bindingContext == null)
-        {
-            return false;
-        }
-
-        CallableDescriptor callableDescriptor = (CallableDescriptor)
-                bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, method);
-
-        String name = callableDescriptor.getName().asString();
+        String name = getCallableName(method);
 
         if (!memberName.equals(name))
         {
             return false;
         }
 
-        if (callableDescriptor == null)
-        {
-            return false;
-        }
-
-        List<ValueParameterDescriptor> valueParameters = callableDescriptor.getValueParameters();
+        List<KtParameter> valueParameters = method.getValueParameters();
         if (paramTypeNames.size() != valueParameters.size())
         {
             return false;
@@ -136,8 +113,7 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
 
         for (int i = 0; i < paramTypeNames.size(); i++)
         {
-            KotlinType paramType = valueParameters.get(i).getType();
-            String normalizedParamFqName = normalizeTypeName(paramType);
+            String normalizedParamFqName = normalizeTypeName(valueParameters.get(i).getTypeReference());
             if (normalizedParamFqName == null)
             {
                 return false;
@@ -148,50 +124,75 @@ public class JitWatchKotlinSupport implements JitWatchLanguageSupport<KtClassOrO
             }
         }
 
-        String normalizedReturnFqName = normalizeTypeName(callableDescriptor.getReturnType());
+        String normalizedReturnFqName = method instanceof KtConstructor ? Void.TYPE.getName() : normalizeTypeName(method.getTypeReference());
 
         return returnTypeName.equals(normalizedReturnFqName);
     }
 
-    private String normalizeTypeName(KotlinType kotlinType)
+    private String getCallableName(KtCallableDeclaration method)
     {
-        if (kotlinType == null)
+        if (method instanceof KtConstructor)
         {
-            return Void.class.getName();
+            KtClassOrObject containingClass = getContainingClass(method);
+            return containingClass == null ? null : containingClass.getName();
         }
 
-        ClassifierDescriptor classifierDescriptor = kotlinType.getConstructor().getDeclarationDescriptor();
-        if (classifierDescriptor == null)
+        return method.getName();
+    }
+
+    private String normalizeTypeName(KtTypeReference typeReference)
+    {
+        if (typeReference == null)
         {
-            return null;
+            return Void.TYPE.getName();
         }
 
-        String fqName = DescriptorUtils.getFqName(classifierDescriptor).toSafe().asString();
-        boolean isNullable = kotlinType.isMarkedNullable();
+        String typeName = typeReference.getText();
+        boolean isNullable = typeName.endsWith("?");
+        typeName = typeName.replace("?", "");
+        typeName = stripGenericArguments(typeName);
 
-        switch (fqName)
+        switch (typeName)
         {
+            case "String":
             case "kotlin.String":
                 return "java.lang.String";
+            case "Boolean":
             case "kotlin.Boolean":
                 return isNullable ? "java.lang.Boolean" : "boolean";
+            case "Char":
             case "kotlin.Char":
                 return isNullable ? "java.lang.Character" : "char";
+            case "Byte":
             case "kotlin.Byte":
                 return isNullable ? "java.lang.Byte" : "byte";
+            case "Short":
             case "kotlin.Short":
                 return isNullable ? "java.lang.Short" : "short";
+            case "Int":
             case "kotlin.Int":
                 return isNullable ? "java.lang.Integer" : "int";
+            case "Long":
             case "kotlin.Long":
                 return isNullable ? "java.lang.Long" : "long";
+            case "Float":
             case "kotlin.Float":
                 return isNullable ? "java.lang.Float" : "float";
+            case "Double":
             case "kotlin.Double":
                 return isNullable ? "java.lang.Double" : "double";
+            case "Unit":
+            case "kotlin.Unit":
+                return Void.TYPE.getName();
             default:
-                return fqName;
+                return typeName;
         }
+    }
+
+    private String stripGenericArguments(String typeName)
+    {
+        int genericStart = typeName.indexOf('<');
+        return genericStart == -1 ? typeName : typeName.substring(0, genericStart);
     }
 
     @Override

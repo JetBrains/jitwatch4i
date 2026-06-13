@@ -350,7 +350,7 @@ public class JITWatchUI implements IJITListener, ILogParseErrorListener, IStageA
         String parserProperty = System.getProperty("jitwatch.parser", ParserType.HOTSPOT.toString());
         comboParser.setSelectedItem(ParserType.fromString(parserProperty));
 
-        AnAction openLogAction = new AnAction("Open the JIT log file for analysis", "Open Log", AllIcons.Actions.Menu_open)
+        AnAction openLogAction = new AnAction("Open the JIT log file for analysis", "Open Log", AllIcons.Actions.MenuOpen)
         {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e)
